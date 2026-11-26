@@ -192,7 +192,8 @@ const TOOLS={
  enginejack:{n:'Engine support and transmission jack',b:'Fighter Tools',p:900},
  camtools:{n:'EcoBoost cam holding tools',b:'Fighter Tools',p:300},
  scholder:{n:'Supercharger pulley holding tool',b:'Fighter Tools',p:150},
- imstool:{n:'IMS bearing tool kit',b:'Fighter Tools',p:600}
+ imstool:{n:'IMS bearing tool kit',b:'Fighter Tools',p:600},
+ rotarycomp:{n:'Rotary compression tester',b:'Fighter Tools',p:350}
 };
 const MARKUP=1.35; // hardware store price vs the tool truck
 const UPG=[
@@ -217,7 +218,7 @@ const RANKS=[
  {n:'Fast Start Max Pro XL',s:'1.14 L',at:18,bar:4}
 ];
 const FLEET=6;
-const SEASON_AT=[0,4,7,11,15];
+const SEASON_AT=[0,4,7,11,16];
 function seasonOf(i){let n=1;SEASON_AT.forEach((a,k)=>{if(i>=a)n=k+1});return n}
 const MULT=[1,1,4,10,25];
 function mult(){return MULT[seasonOf(S.job)-1]}
@@ -698,6 +699,45 @@ const JOBS=[
       {t:'Sign it for $100.',rep:-6,cash:100,msg:'You make $100. Your name is now on a truck that can’t stop.'}]},
   lesson:{title:'Reading a compression test',body:'A dry compression test tells you which cylinder is weak. A wet test tells you why. Squirt a little oil in and test again. If the number jumps, the oil sealed worn rings. If it barely moves, the leak is up top, in a valve or a head gasket. A leak-down test finishes the job by showing you where the air escapes.'}
 },
+{ id:'miata', when:'July 1998', title:'1990 Mazda MX-5 Miata', art:'roadster', col:'#c8102e', pull:'TURN THE KEY',
+  cust:'Jen Dubois', rel:'who drives it up to Silver Star on summer weekends', face:'#e9c3a0', pay:380,
+  sp:[0,0,0,1,1,2,2], bp:[0,1],
+  story:'It’s felt slower and slower for a year, and now it idles rough. A friend told me to look at the front pulley, and I swear it wobbles.',
+  checks:[
+   {id:'pulley',t:'Watch the crank pulley at idle',r:'It wobbles compared with the water pump and alternator pulleys.'},
+   {id:'slots',t:'Count the slots in the face of the crank pulley',r:'Four slots. That’s the early short-nose crankshaft used on 1990 and early 1991 cars.'},
+   {id:'timing',t:'Line up the cam marks and check where the crank mark sits',r:'The crank mark is off by several degrees. Something between the crankshaft and the timing belt has moved.'},
+   {id:'belt',t:'Check the timing belt',r:'The belt is in good shape and properly tensioned.'},
+   {id:'comp',t:'Check compression',r:'Healthy and even on all four.',tool:'compg',rt:'Strong, even compression on all four cylinders.'}
+  ],
+  diag:[
+   {t:'A loose crank bolt has let the key wear out the keyway in the short-nose crankshaft, and the timing has drifted',ok:1,why:'The pulley wobbles, it’s a four-slot short-nose crank, and the crank mark has moved while the belt is fine. The key has been chewing its slot and the timing is slipping.'},
+   {t:'A worn timing belt that jumped a tooth',ok:0,why:'The belt is in good shape and tight. A jumped belt doesn’t make the pulley wobble.'},
+   {t:'Low compression from a tired engine',ok:0,why:'Compression is healthy and even.'},
+   {t:'It’s a Miata. Slow is part of the charm.',ok:0,why:'Miatas are supposed to feel light and eager. This one has lost power for a reason.'}
+  ],
+  dad:'It’s been getting slower a bit at a time, and something up front wobbles. Follow the wobble.',
+  gpa:'When a pulley wobbles, whatever holds it on has let go. Look at the bolt, the key and the slot it sits in.',
+  tools:['sockets','torque','wrench','balpuller'],
+  parts:[
+   {id:'key',n:'New crank key, crank bolt and timing sprocket',p:60},
+   {id:'comp',n:'Retaining compound for the keyway repair',p:25},
+   {id:'belt',n:'Timing belt and water pump kit',p:180,ok:1},
+   {id:'engine',n:'Replacement engine with the later long-nose crank',p:1800},
+   {id:'crank',n:'New crankshaft',p:900}
+  ],
+  need:s=>s.has('key')&&s.has('comp'),
+  needMsg:'You need a new key, bolt and sprocket, and the retaining compound for the keyway repair.',
+  steps:['Remove the accessory belts, the crank pulley and the timing belt covers.','Lock the engine at top dead centre and take off the timing belt.','Remove the loose crank bolt and pull off the sprocket and key.','Clean the crank nose and the worn keyway until they’re spotless.','Seat a new key in retaining compound, fit the sprocket and torque a new bolt to spec.','Refit the timing belt with every mark lined up and turn the engine two full turns by hand.','Refit the covers, pulley and belts, then check the timing at idle.'],
+  bad:[
+   {t:'Crank the old bolt down as hard as you can and call it fixed.',cost:0,nostart:1,msg:'The keyway is still worn and the timing is still off.'},
+   {t:'Weld the pulley to the crankshaft so it can never move again.',cost:1200,msg:'Now nothing on the front of the engine can ever come apart, including the timing belt. You buy Jen a used engine.'}
+  ],
+  moral:{q:'Jen asks if she should sell the car now that she knows it has the “bad crank.”',
+   a:[{t:'Tell her the truth: the repair is well proven, and plenty of short-nose cars run for years afterward.',rep:3,cash:0,msg:'She keeps it. She tells the whole Miata club where to bring their cars.'},
+      {t:'Tell her it’s a time bomb and offer to buy it cheap.',rep:-5,cash:0,msg:'She sells it to you, then finds the Miata club’s article on the repair. She tells them too.'}]},
+  lesson:{title:'The short-nose crankshaft',body:'The first Miatas, all 1990 cars and some 1991s, used a crankshaft with a short nose. The key that locks the timing sprocket only partly engages its slot. If the crank bolt loosens, the key wears the keyway, the timing drifts, and the car slowly loses power. Mazda lengthened the nose and fitted a stronger bolt later in 1991. You can spot a short-nose engine by its crank pulley: four slots instead of eight.'}
+},
 { id:'es1800', when:'August 1999', title:'1973 Volvo 1800ES', art:'shooting', col:'#b8b8b0', pull:'TURN THE KEY',
   cust:'Ingrid Sorensen', rel:'who has owned it since it was new', face:'#ecd2b5', pay:320,
   sp:[0,0,1,1,2,2], bp:[1,1],
@@ -855,6 +895,47 @@ const JOBS=[
       {t:'Blame the part.',rep:-2,cash:0,msg:'The cousin builds his next engine the same way and wipes another cam.'}]},
   lesson:{title:'Zinc and flat-tappet cams',body:'Older engines use flat-tappet camshafts, where each lifter slides across the face of a cam lobe. That sliding contact relies on an anti-wear additive called ZDDP, which carries zinc and phosphorus. Oil makers cut it back because it poisons catalytic converters, and modern roller-cam engines don’t need as much. A new flat-tappet cam must be broken in with high-zinc oil at a fast idle, or a lobe can wipe flat in minutes.'}
 },
+{ id:'subaru', when:'October 2008', title:'2002 Subaru Impreza 2.5 RS', art:'rally', col:'#1d4ed8', pull:'TURN THE KEY',
+  cust:'Owen Pritchard', rel:'who drives logging roads to go fishing', face:'#d4a77d', pay:1000,
+  sp:[0,0,0,1,1,2,2,2], bp:[0,1],
+  story:'It smells like burning oil when I stop, there’s a puddle under it, and the coolant keeps going down. It has 230,000 kilometres on it.',
+  checks:[
+   {id:'seam',t:'Look along the seam where each cylinder head meets the block',r:'Oil is seeping from the head gasket seam on the left side, and there’s crusty dried coolant just above it.'},
+   {id:'vc',t:'Check the valve cover gaskets',r:'Dry. The leak starts lower down, at the head gasket seam.'},
+   {id:'exh',t:'Look at the exhaust from underneath',r:'Oil is dripping onto the exhaust pipe. That’s the burning smell.'},
+   {id:'mix',t:'Check the oil and coolant for mixing',r:'No milkiness in the oil, no oil in the coolant.'},
+   {id:'press',t:'Pressure test the cooling system',r:'It slowly loses pressure, and coolant weeps from the left head gasket seam.'},
+   {id:'comp',t:'Run a compression test',r:'Even on all four cylinders.',req:'compg'}
+  ],
+  diag:[
+   {t:'External head gasket leaks, letting oil and coolant out at the seam between head and block',ok:1,why:'Oil and coolant are both coming from the head gasket seam, the valve covers are dry, and nothing is mixing inside. The gaskets are leaking to the outside.'},
+   {t:'Leaking valve cover gaskets',ok:0,why:'A very common leak, so you were right to check. But these are dry, and valve covers can’t leak coolant.'},
+   {t:'A cracked cylinder head',ok:0,why:'Compression is even and nothing is mixing inside. The leak is at the gasket.'},
+   {t:'Subarus mark their territory.',ok:0,why:'Only the ones with leaking head gaskets.'}
+  ],
+  dad:'Oil and coolant coming out of the same seam. What seals that seam?',
+  gpa:'A boxer engine lies on its side, so its head gaskets sit right where everything runs down. Make sure you aren’t chasing a valve cover leak first.',
+  tools:['sockets','torque','straight','feeler','enginejack'],
+  parts:[
+   {id:'gasket',n:'Multi-layer steel head gasket set',p:220},
+   {id:'machine',n:'Both heads checked and surfaced at the machine shop',p:300},
+   {id:'timing',n:'Timing belt, idlers and water pump',p:400,ok:1},
+   {id:'vc',n:'Valve cover gaskets only',p:40},
+   {id:'cond',n:'Bottle of cooling system conditioner',p:15},
+   {id:'used',n:'Used engine from the wrecker',p:2000}
+  ],
+  need:s=>s.has('gasket')&&s.has('machine'),
+  needMsg:'You need the steel head gasket set and both heads surfaced.',
+  steps:['Drain the oil and coolant, then lower the engine out of the car.','Remove the timing belt and the cam sprockets.','Remove both cylinder heads.','Send both heads to the machine shop to check for warpage and surface them.','Clean the block decks and fit the new multi-layer steel gaskets.','Torque the head bolts in sequence, in stages.','Fit a new timing belt with every mark lined up.','Reinstall the engine, refill it and bleed the cooling system.'],
+  bad:[
+   {t:'Pour in a bottle of stop-leak and send him back to the logging road.',cost:0,nostart:1,msg:'The oil is still leaking onto the exhaust. Stop-leak doesn’t seal oil.'},
+   {t:'Scrape the aluminium head surface clean with a screwdriver.',cost:300,msg:'You gouged the head. The machine shop takes off more metal to clean it up, and you pay for it.'}
+  ],
+  moral:{q:'With the engine out, you see the timing belt was due 50,000 kilometres ago. Owen only asked about the leaks.',
+   a:[{t:'Call Owen, tell him, and give him the price while the engine is already out.',rep:2,cash:0,msg:'He says yes right away. Doing it now saves him paying for most of the labour twice.'},
+      {t:'Put it back together and say nothing.',rep:-2,cash:0,msg:'The belt lets go on a logging road six months later. Owen has a long walk to think about who saw it.'}]},
+  lesson:{title:'Subaru’s head gasket years',body:'Subaru’s boxer engines lie flat, with a cylinder head on each side. The naturally aspirated 2.5 litre engines from roughly 1996 to 2004 became known for head gasket trouble, and many from 1999 on leaked oil and coolant to the outside at the seam between head and block. The turbocharged WRX had far fewer problems. The lasting fix uses multi-layer steel gaskets and freshly surfaced heads.'}
+},
 { id:'skyline', when:'August 2009', title:'1990 Nissan Skyline GT-R, right-hand drive', art:'coupe', col:'#d8dbe0', pull:'TURN THE KEY',
   cust:'Kevin Tran', rel:'who imported it from Japan', face:'#d7b38e', pay:1200,
   sp:[0,0,0,1,1,1,2,2], bp:[1,2],
@@ -894,6 +975,46 @@ const JOBS=[
       {t:'Turn it up for a $150 tip.',rep:-3,cash:150,msg:'He tips you $150. The new turbos last until October, and he tells people you did the work.'}]},
   lesson:{title:'The cars that came over from Japan',body:'Canada lets in cars from other countries once they are fifteen years old. The United States makes people wait twenty-five years. That’s why BC roads are full of right-hand-drive Skylines, Supras and vans from Japan. The R32 Skyline GT-R used two turbochargers with lightweight ceramic turbine wheels. They spool up fast, but turned up past what they were built for, the ceramic can shatter.'}
 },
+{ id:'rx7', when:'May 2010', title:'1993 Mazda RX-7, twin-turbo rotary', art:'rx7', col:'#e8b923', pull:'TURN THE KEY',
+  cust:'Marcus Lee', rel:'who has wanted one since he was twelve', face:'#d9b38c', pay:1300,
+  sp:[0,0,0,1,1,2,2,2], bp:[1,2],
+  story:'It starts fine cold. But after a drive, if I shut it off for ten minutes, it cranks and cranks and won’t fire. It also puffs smoke when I come off the throttle.',
+  checks:[
+   {id:'comp',t:'Run a rotary compression test on both rotors',r:'The front rotor shows three even pulses. The rear rotor shows a pattern: one high pulse, then two low ones, over and over.',req:'rotarycomp'},
+   {id:'hot',t:'Try a hot restart',r:'It cranks at a normal speed but won’t catch.'},
+   {id:'smoke',t:'Watch the exhaust as you come off the throttle',r:'A puff of blue smoke.'},
+   {id:'oil',t:'Check the oil level',r:'It’s down more than a litre since the last change. A rotary burns some oil by design, but this is a lot.'},
+   {id:'spark',t:'Test for spark',r:'Good spark on every plug.',tool:'tester',rt:'The tester flashes on every plug lead.'}
+  ],
+  diag:[
+   {t:'A failed apex seal on the rear rotor',ok:1,why:'One high pulse and two low ones is the signature of one failed apex seal. A hot engine seals worse than a cold one, so low compression shows up first as a hard hot start.'},
+   {t:'Worn piston rings',ok:0,why:'A rotary engine has no pistons and no piston rings. It seals with apex, side and corner seals on the rotors.'},
+   {t:'A tired starter motor',ok:0,why:'It cranks at a normal speed. It cranks fine and doesn’t fire.'},
+   {t:'A flooded engine',ok:0,why:'Rotaries can flood, but flooding doesn’t show up as one high and two low pulses on one rotor.'}
+  ],
+  dad:'Starts cold, won’t start hot. Cold parts seal tighter. Something isn’t sealing.',
+  gpa:'I never understood those spinning-triangle engines. But compression is compression. Test it.',
+  tools:['sockets','torque','rotarycomp','enginejack'],
+  parts:[
+   {id:'kit',n:'Rotary rebuild kit with apex, side and corner seals',p:1400},
+   {id:'orings',n:'Engine gasket and O-ring set',p:250},
+   {id:'oil',n:'Oil and filter',p:90},
+   {id:'starter',n:'New starter',p:400},
+   {id:'rings',n:'Piston ring set',p:150},
+   {id:'turbos',n:'New twin turbos',p:3000}
+  ],
+  need:s=>s.has('kit')&&s.has('orings')&&s.has('oil'),
+  needMsg:'You need the seal rebuild kit, a full set of gaskets and O-rings, and fresh oil.',
+  steps:['Remove the engine from the car.','Remove the tension bolts and separate the housings and rotors, laying every part out in order.','Measure the rotor housings and side plates for wear.','Clean the rotor grooves and fit new apex, side and corner seals.','Check every seal’s clearance in its groove.','Reassemble with new O-rings, lubricating every seal as it goes in.','Torque the tension bolts in sequence.','Reinstall the engine, prime the oil, and test compression on both rotors.'],
+  bad:[
+   {t:'Mix up the seals from the front and rear rotors. They’re all the same.',cost:1400,msg:'They aren’t all the same, and they wear to fit their own grooves. It won’t hold compression, and you rebuild it again.'},
+   {t:'Fix the low compression by running thicker oil.',cost:0,nostart:1,msg:'A broken apex seal doesn’t care how thick the oil is.'}
+  ],
+  moral:{q:'Marcus plans to sell the car someday. He asks if you’ll write down a better compression number than it had before the rebuild, “just for the paperwork.”',
+   a:[{t:'Refuse. The rebuild receipt is worth more than a fake number.',rep:3,cash:0,msg:'He keeps the receipt. When he sells years later, it’s the first thing the buyer asks to see.'},
+      {t:'Write the number for $200.',rep:-5,cash:200,msg:'You make $200 for writing a lie on your own letterhead.'}]},
+  lesson:{title:'The rotary engine',body:'Mazda’s rotary engine has no pistons. Triangular rotors spin inside oval housings, and each rotor tip carries an apex seal that seals the chambers on either side of it. When one apex seal fails, a rotary compression test shows a pattern of one high pulse followed by two low ones. Low compression often shows up first as a hard hot start, because a hot engine seals less well than a cold one.'}
+},
 { id:'smart', when:'March 2012', title:'2009 Smart fortwo', art:'micro', col:'#3a3a3a', pull:'TURN THE KEY',
   cust:'Tamsin Hale', rel:'who uses it for her mobile dog-grooming business', face:'#e8c4a0', pay:800,
   sp:[0,0,0,1,1,1,2,2], bp:[0,2],
@@ -931,6 +1052,45 @@ const JOBS=[
    a:[{t:'Lay out both options honestly, with the risks of each.',rep:3,cash:0,msg:'She picks the rebuild because you explained it straight. She sends you three customers.'},
       {t:'Tell her the used engine is junk so you keep the job.',rep:-3,cash:0,msg:'She finds out the wrecker’s engine was fine. She also finds another mechanic.'}]},
   lesson:{title:'Fix the cause, not only the damage',body:'The Smart fortwo of this era uses a one-litre three-cylinder engine. A known weak spot is the oil control rings, which can gum up and leave oil in the top of the cylinder, where it cooks the valves and leads to a misfire from low compression. The engine is small and comparatively cheap to rebuild. A good mechanic fixes the burned valve and the rings that caused it.'}
+},
+{ id:'vette', when:'April 2014', title:'2008 Chevrolet Corvette Z06, 7.0 litre LS7', art:'vette', col:'#c4161c', pull:'TURN THE KEY',
+  cust:'Dan Okonkwo', rel:'who takes it to car shows across the Okanagan', face:'#7a4b2e', pay:1600,
+  sp:[0,0,0,1,1,2,2,2], bp:[0,2],
+  story:'It’s never missed a beat, but I’ve been reading on the Corvette forums about LS7s dropping valves. It has 60,000 kilometres. Can you check it before I drive it through the Rockies?',
+  checks:[
+   {id:'noise',t:'Listen to the valvetrain with the stethoscope',r:'A light ticking, a little louder on the driver’s side. It’s hard to tell from normal LS valvetrain noise.',req:'stetho'},
+   {id:'oil',t:'Look at the oil consumption records',r:'It uses more oil between changes than it did two years ago.'},
+   {id:'comp',t:'Run a compression test',r:'Healthy on all eight. Worn guides don’t show up on a compression test until it’s too late.',req:'compg'},
+   {id:'bulletin',t:'Read GM’s bulletin on LS7 valve guides',r:'GM says the number of valve and head replacements is very low, and dealers shouldn’t take an engine apart unless it shows symptoms or a measured problem.'},
+   {id:'wiggle',t:'Pull the springs on one head and wiggle-test each valve with a dial indicator',r:'Several exhaust valves move well past the factory limit. One moves far more than the rest.',req:'dial'}
+  ],
+  diag:[
+   {t:'Worn exhaust valve guides, caught before a valve dropped',ok:1,why:'The wiggle test measured guide wear past the limit on several exhaust valves, and oil use is up. Compression is still fine because the valves still seal. For now.'},
+   {t:'Nothing is wrong. GM says it isn’t a problem.',ok:0,why:'GM’s bulletin says not to tear engines down without symptoms or a measured problem. You have both.'},
+   {t:'A collapsed lifter',ok:0,why:'A lifter could tick, but the dial indicator measured loose valve guides.'},
+   {t:'It’s just excited to see the Rockies.',ok:0,why:'It will be, once the guides are done.'}
+  ],
+  dad:'Don’t guess and don’t panic. Measure it.',
+  gpa:'A forum full of nervous owners isn’t a diagnosis. A dial indicator is.',
+  tools:['sockets','torque','dial','springcomp','stetho'],
+  parts:[
+   {id:'heads',n:'Rebuilt heads with new guides, valves and springs',p:3200},
+   {id:'gaskets',n:'Head gaskets and new head bolts',p:300},
+   {id:'oil',n:'Oil and filter',p:90},
+   {id:'crate',n:'Brand-new crate engine',p:18000},
+   {id:'lifters',n:'Full lifter set',p:600}
+  ],
+  need:s=>s.has('heads')&&s.has('gaskets')&&s.has('oil'),
+  needMsg:'You need the rebuilt heads, new head gaskets and bolts, and fresh oil.',
+  steps:['Drain the oil and coolant and remove the intake manifold.','Remove the valve covers, rockers and pushrods.','Remove both cylinder heads.','Send the heads out for new guides, valves and springs, machined to spec.','Clean the block decks and check the cylinder walls.','Fit new head gaskets and torque the new bolts in sequence.','Reinstall the pushrods, rockers, valve covers and intake.','Refill, start it and check for leaks and noise.'],
+  bad:[
+   {t:'Skip the measuring and tell him it’s fine because GM said so.',cost:0,nostart:1,msg:'You never measured it. Halfway through the Rockies, an exhaust valve drops into a cylinder.'},
+   {t:'Reuse the old head bolts to save money.',cost:700,msg:'Those bolts stretch when torqued and aren’t meant to be reused. One won’t hold torque, and you redo the job.'}
+  ],
+  moral:{q:'The job is done. Dan asks you to write “complete engine rebuild” on the invoice, because it will look better when he sells the car.',
+   a:[{t:'Write down exactly what you did: new heads, guides, valves and springs.',rep:3,cash:0,msg:'Dan grumbles, then admits a detailed invoice is worth more anyway. Serious buyers read the details.'},
+      {t:'Write “complete engine rebuild” for a $300 tip.',rep:-5,cash:300,msg:'A buyer’s mechanic pulls a valve cover, sees the original bottom end, and calls your shop to ask why.'}]},
+  lesson:{title:'Measure, don’t guess',body:'The LS7 V8 in the 2006 to 2013 Corvette Z06 became famous among owners for exhaust valve guide wear that, in some cases, let a valve drop into a cylinder. GM published a bulletin saying incidents were very low and engines without symptoms shouldn’t be torn down. Owners and shops answered with the wiggle test, which measures valve stem movement with a dial indicator. Either way, the lesson for a mechanic is the same: measure it.'}
 },
 { id:'tremor', when:'October 2015', title:'2014 Ford F-150 Tremor, 3.5 EcoBoost', art:'pickup', col:'#1a1a1a', pull:'TURN THE KEY',
   cust:'Brandon Kerr', rel:'a framer who tows his work trailer every day', face:'#c89c74', pay:1400,
@@ -1088,6 +1248,10 @@ function carShape(k,c){
   coupe:`<path d="M40 150 L42 118 L115 110 L150 82 L245 82 L285 108 L358 116 L360 150Z" fill="${c}"/><rect x="330" y="100" width="34" height="6" fill="#222"/><path d="M156 88 L200 88 L200 108 L130 108Z M208 88 L240 88 L268 108 L208 108Z" fill="${glass}"/><circle cx="345" cy="128" r="6" fill="#e33"/><circle cx="330" cy="128" r="6" fill="#e33"/>${W(105,22)}${W(295,22)}`,
   micro:`<path d="M120 150 L120 100 Q130 70 180 66 L240 66 Q280 70 285 110 L285 150Z" fill="${c}"/><path d="M120 108 L285 108 L285 150 L120 150Z" fill="#b8bcc4"/><path d="M140 76 L235 74 L250 104 L132 104Z" fill="${glass}"/>${W(150,20)}${W(258,20)}`,
   saloon:`<path d="M38 150 L40 120 Q100 108 128 106 L165 80 L255 80 Q300 92 330 112 L362 120 L364 150Z" fill="${c}"/><path d="M170 86 L212 86 L212 106 L144 106Z M220 86 L252 86 L290 106 L220 106Z" fill="${glass}"/>${W(105,22)}${W(300,22)}`,
+  roadster:`<path d="M50 150 Q52 122 100 116 L170 112 L196 96 L214 96 L222 112 Q320 112 350 130 L352 150Z" fill="${c}"/><path d="M198 100 L212 100 L218 112 L190 112Z" fill="${glass}"/><rect x="214" y="104" width="34" height="8" rx="4" fill="#222"/>${W(110,20)}${W(295,20)}`,
+  rx7:`<path d="M34 150 Q38 126 90 118 Q140 104 175 88 Q240 78 290 96 Q345 112 362 136 L364 150Z" fill="${c}"/><path d="M182 92 Q235 84 282 104 L170 106Z" fill="${glass}"/><rect x="320" y="100" width="40" height="5" fill="#222"/>${W(105,21)}${W(300,21)}`,
+  vette:`<path d="M30 150 Q32 128 80 122 Q140 112 180 92 L260 88 Q320 100 364 126 L366 150Z" fill="${c}"/><path d="M188 96 L254 93 L292 108 L172 110Z" fill="${glass}"/><rect x="30" y="134" width="60" height="4" fill="#111"/>${W(100,22)}${W(305,22)}`,
+  rally:`<path d="M45 150 L48 118 L110 112 L140 84 L250 84 L285 112 L355 118 L358 150Z" fill="${c}"/><path d="M146 90 L196 90 L196 112 L122 112Z M204 90 L246 90 L274 112 L204 112Z" fill="${glass}"/><rect x="320" y="98" width="40" height="5" fill="#111"/><rect x="330" y="103" width="4" height="14" fill="#111"/><rect x="350" y="103" width="4" height="14" fill="#111"/><rect x="68" y="108" width="34" height="7" rx="2" fill="#111"/><circle cx="105" cy="152" r="22" fill="#1a1a1a"/><circle cx="105" cy="152" r="11" fill="#d4a017"/><circle cx="295" cy="152" r="22" fill="#1a1a1a"/><circle cx="295" cy="152" r="11" fill="#d4a017"/>`,
   porsche:`<path d="M36 150 Q40 122 95 114 Q150 92 190 80 Q260 74 310 104 Q355 116 364 150Z" fill="${c}"/><path d="M196 86 Q250 82 292 106 L180 106Z" fill="${glass}"/><ellipse cx="80" cy="120" rx="12" ry="9" fill="${glass}"/>${W(105,21)}${W(300,21)}`
  };
  return S[k]||S.sedan;
@@ -1378,7 +1542,7 @@ function finishJob(fast){
    if(S.job===4&&S.town!=='Vernon'){S.town='Vernon';save();L.push(MOVE)}
    if(S.job===7)L.push(SEASON3);
    if(S.job===11&&!S.ownShop){S.ownShop=true;S.town='Vernon';save();L.push(...OPENING)}
-   if(S.job===15)L.push(SEASON5);
+   if(S.job===16)L.push(SEASON5);
    if(S.job===JOBS.length)L.push(...FINALE);
    if(S.job===1)L.push({title:'A truck pulls up',body:'A big Fighter Tools truck stops in front of your shed. The driver has a route through town every week. From now on you can buy tools from him for less than the hardware store charges.',tag:'Your shop'});
    lessons(L,()=>{renderShop();show('sShop')})};
