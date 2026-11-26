@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Fast Start 104: Get Your Motor Running</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,800;1,800;1,900&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: plain-spoken shop talk, proud of the trade, never cute.
+   IDEA: a 1984 service counter: work orders, a pegboard, a tool truck.
+   PICTURE: the shop itself, drawn bigger and cleaner as you earn it.
+   COLOUR and TYPE: Fast Start navy, red, yellow, cream; Barlow Condensed italic like the label.
+   LAYOUT: phone-first single column, sticky status bar, one card per stage. */
+:root{--navy:#0E2442;--navy2:#16325a;--red:#A8291E;--yel:#E9C243;--cream:#EFE6D2;--ink:#1b1b1b;--grn:#2f7d3a}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--navy);color:var(--cream);font:16px/1.5 Barlow,system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overflow-x:clip}
+h1,h2,h3,.cond{font-family:'Barlow Condensed',Impact,sans-serif;font-style:italic;font-weight:900;line-height:1.02;margin:0}
+h1{font-size:clamp(40px,11vw,64px);color:var(--yel)}
+h2{font-size:clamp(28px,7.5vw,40px);color:var(--yel)}
+h3{font-size:22px;color:var(--yel);margin:4px 0 6px}
+p{margin:8px 0}
+.screen{display:none;min-height:100vh;padding:14px max(4vw,14px) 40px;max-width:640px;margin:0 auto}
+.screen.on{display:block}
+.center{text-align:center}
+img{max-width:100%;display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;font-size:22px;
+  letter-spacing:.5px;color:var(--navy);background:var(--yel);border:3px solid #000;border-radius:10px;padding:8px 20px;margin:6px 4px;box-shadow:3px 3px 0 #000;cursor:pointer}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+.btn.red{background:var(--red);color:#fff}.btn.cream{background:var(--cream)}.btn.ghost{background:transparent;color:var(--cream);border-color:var(--cream);box-shadow:none}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.wide{width:100%;margin:8px 0}
+.card{background:var(--cream);color:var(--ink);border:3px solid #000;border-radius:12px;padding:14px;margin:12px 0;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+.card h3{color:var(--red)}
+.card.dark{background:var(--navy2);color:var(--cream);border-color:var(--yel)}
+.card.dark h3{color:var(--yel)}
+.small{font-size:13px;opacity:.85}
+.stat{position:sticky;top:0;z-index:5;background:var(--navy);border-bottom:2px solid var(--yel);display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;margin:-14px 0 8px}
+.stat b{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-size:22px;color:var(--yel)}
+.stat .lab{font-size:11px;text-transform:uppercase;opacity:.75;display:block;line-height:1}
+.bars{display:flex;gap:2px}.bars i{width:7px;height:20px;background:#2a5ea8;border:1px solid #000}.bars i.r{background:var(--red)}
+.steps{display:flex;gap:3px;margin:6px 0 10px}.steps span{flex:1;height:6px;border-radius:3px;background:#2b4670}.steps span.d{background:var(--yel)}
+.opt{display:block;width:100%;text-align:left;background:#fff;color:var(--ink);border:2px solid #000;border-radius:10px;padding:11px 12px;margin:7px 0;font:600 16px Barlow,sans-serif;cursor:pointer;min-height:48px}
+.opt.done{background:#e3edda}.opt.bad{background:#f3d4cf}.opt.sel{background:var(--yel)}
+.opt .res{display:block;font-weight:400;font-size:15px;margin-top:4px;color:#333}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.item{position:relative;background:#fff;color:var(--ink);border:2px solid #000;border-radius:10px;padding:8px;font:600 14px/1.25 Barlow,sans-serif;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;min-height:64px}
+.item .pr{display:block;font-weight:700;color:var(--red);margin-top:3px}
+.item .br{display:block;font-weight:400;font-size:12px;color:#555}
+.item.own .pr{color:var(--grn)}
+.item.in{opacity:.35}
+.tray{min-height:96px;border:3px dashed var(--red);border-radius:12px;padding:8px;background:#f7f1e3;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;margin:8px 0}
+.tray.hot{background:#fff4c7}
+.tray .chip{background:var(--navy);color:var(--cream);border-radius:20px;padding:6px 10px;font:600 14px Barlow,system-ui,sans-serif;cursor:pointer}
+.tray:empty::before{content:attr(data-ph);color:#8a7d62;font-size:14px;margin:auto}
+.ghostdrag{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-60%) rotate(-3deg);box-shadow:6px 6px 0 rgba(0,0,0,.4)}
+.seq{display:flex;align-items:flex-start;gap:10px}
+.seq .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--yel);display:grid;place-items:center;font:italic 900 18px 'Barlow Condensed',sans-serif}
+.seq .n.e{background:#ddd;color:#999}
+.who{display:flex;gap:12px;align-items:center}
+.face{flex:none;width:58px;height:58px;border-radius:50%;border:3px solid #000;background:#d9b48c}
+.fig{background:#0a1a33;border:3px solid #000;border-radius:12px;overflow:hidden;margin:10px 0}
+.fig svg{display:block;width:100%;height:auto}
+.fs{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;font-size:clamp(54px,17vw,96px);color:var(--yel);-webkit-text-stroke:2px #000;text-shadow:4px 4px 0 var(--red);line-height:.9;margin:6px 0}
+.shake{animation:sh .5s linear 3}@keyframes sh{0%,100%{transform:translate(0)}25%{transform:translate(-3px,1px)}75%{transform:translate(3px,-1px)}}
+.pop{animation:pp .5s ease-out}@keyframes pp{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.shake,.pop{animation:none}}
+.modal{position:fixed;inset:0;z-index:40;background:rgba(5,12,25,.82);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}.modal .card{max-width:480px;width:100%;max-height:90vh;overflow:auto}
+input[type=text]{font:600 18px Barlow;padding:10px 12px;border:3px solid #000;border-radius:10px;width:100%;max-width:320px;min-height:48px}
+.rank{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;margin:4px 0;background:rgba(255,255,255,.06)}
+.rank.on{background:var(--yel);color:var(--navy)}
+.rank .cond{font-size:20px;flex:1}
+.locked{opacity:.55}
+a{color:var(--yel)}
+</style>
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div class="screen center" id="sAge">
+  <img src="logo80s.jpg" alt="Fast Start 104" style="width:min(100%,420px);margin:30px auto 10px;border-radius:10px">
+  <h2>GET YOUR MOTOR RUNNING</h2>
+  <p>This game comes from a liquor brand. You must be of legal drinking age where you live (19 or older in British Columbia) to play.</p>
+  <button class="btn" id="ageYes">I'M 19 OR OLDER</button><button class="btn red" id="ageNo">I'M NOT</button>
+  <p class="small" id="ageMsg"></p>
+</div>
+
+<!-- TITLE -->
+<div class="screen center" id="sTitle">
+  <img src="banner.jpg" alt="Fast Start 104 High Octane" style="border:3px solid #000;border-radius:10px;margin-top:10px">
+  <h1 style="margin-top:14px">FROM ROOKIE TO MASTER MECHANIC</h1>
+  <p>It's 1984 in British Columbia. You've just turned 19, you've finished high school, and the only thing you've ever fixed is your own bicycle. You like engines. Nobody is going to hand you a career, so you're going to build one with your own two hands.</p>
+  <div id="newGame">
+    <p class="small">What's your name, mechanic?</p>
+    <input type="text" id="nameIn" maxlength="14" placeholder="Your first name" autocomplete="off">
+    <br><button class="btn" id="startBtn">OPEN THE SHOP</button>
+  </div>
+  <div id="contGame" style="display:none">
+    <button class="btn" id="contBtn">BACK TO THE SHOP</button><br>
+    <button class="btn ghost" id="resetBtn">START A NEW CAREER</button>
+  </div>
+  <div class="card" style="text-align:left">
+    <h3>How a job works</h3>
+    <p>A machine comes in that won't start. You inspect it, decide what's wrong, drag the right tools and parts to the bench, and put the repair steps in order. Then you pull the cord. If it fires on the first try, that's a <b>Fast Start</b>.</p>
+    <p>Stuck? Dad will give you a nudge for $5. Grandpa knows these old engines cold, and his advice costs $10. Break something and the repair comes out of your pocket. Do honest work and the customers come back.</p>
+  </div>
+</div>
+
+<!-- STORY / LESSON -->
+<div class="screen" id="sLesson">
+  <div class="card dark pop" id="lessonCard"></div>
+  <button class="btn wide" id="lessonBtn">BACK TO WORK</button>
+</div>
+
+<!-- SHOP HUB -->
+<div class="screen" id="sShop">
+  <div class="stat" id="statShop"></div>
+  <h2 id="shopName"></h2>
+  <div id="shopMsg"></div>
+  <button class="btn wide" id="nextJobBtn">LET’S GET STARTED</button>
+  <div class="fig" id="garage"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+    <button class="btn cream" id="truckBtn">TOOL TRUCK</button>
+    <button class="btn cream" id="fixBtn">FIX UP SHOP</button>
+    <button class="btn cream" id="ranksBtn">FAST START TALLY</button>
+    <button class="btn cream" id="roadBtn">THE ROAD AHEAD</button>
+  </div>
+  <p class="small center" style="margin-top:14px">Fast Start 104 is a 52% neutral spirit from Deep Blue Distilleries in Richmond, BC. In this game a Fast Start is a score. Nobody drinks on the job. Enjoy responsibly, and never drink and drive.</p>
+</div>
+
+<!-- JOB -->
+<div class="screen" id="sJob">
+  <div class="stat" id="statJob"></div>
+  <div class="steps" id="stepBar"></div>
+  <div id="jobBody"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal"><div class="card pop" id="modalCard"></div></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='fs104_career_v1';
+const store={get(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}},clear(){try{localStorage.removeItem(KEY)}catch(e){}}};
+
+/* ---------- sound ---------- */
+let ac=null;
+function audioOn(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){ac=null}}
+function tone(f1,f2,d,type='sawtooth',v=.06,at=0){if(!ac)return;try{const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+at;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(f2,20),t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const sfx={
+ pull:()=>{tone(90,60,.25,'sawtooth',.08);tone(120,70,.25,'square',.03,.05)},
+ fire:()=>{for(let i=0;i<14;i++)tone(70+i*4,55+i*3,.09,'sawtooth',.09,i*.08);tone(600,1200,.4,'triangle',.04,.2)},
+ cough:()=>{tone(80,40,.2,'sawtooth',.1);tone(70,40,.2,'sawtooth',.08,.35)},
+ clank:()=>{tone(900,300,.12,'square',.06);tone(400,100,.2,'triangle',.05,.05)},
+ ok:()=>tone(500,900,.15,'triangle',.06),
+ bad:()=>tone(200,90,.3,'sawtooth',.07)
+};
+
+/* ---------- data ---------- */
+const TOOLS={
+ screw:{n:'Screwdriver set',b:'No-name, handles taped',p:0,start:1},
+ wrench:{n:'Combination wrenches',b:'Garage-sale lot, a few missing',p:0,start:1},
+ plugwr:{n:'Spark plug wrench',b:'Came with Dad’s old car',p:0,start:1},
+ hammer:{n:'Ball-peen hammer',b:'Heavy and rusty',p:0,start:1},
+ rags:{n:'Shop rags',b:'Cut-up old T-shirts',p:0,start:1},
+ feeler:{n:'Feeler gauge set',b:'Fighter Tools',p:6},
+ puller:{n:'Flywheel puller',b:'Fighter Tools',p:22},
+ tester:{n:'Spark tester',b:'Fighter Tools',p:8},
+ compg:{n:'Compression gauge',b:'Fighter Tools',p:28},
+ hook:{n:'Fuel line hook pick',b:'Fighter Tools',p:4},
+ scrench:{n:'Saw scrench',b:'Fighter Tools',p:5},
+ gapper:{n:'Plug gap gauge',b:'Fighter Tools',p:3},
+ sockets:{n:'3/8" socket set',b:'Fighter Tools',p:40},
+ air:{n:'Air compressor and blow gun',b:'Fighter Tools',p:35},
+ torque:{n:'Torque wrench',b:'Fighter Tools',p:45},
+ straight:{n:'Machinist straightedge',b:'Fighter Tools',p:18}
+};
+const MARKUP=1.35; // hardware store price vs the tool truck
+const UPG=[
+ {id:'roof',n:'Patch the roof',p:20,rep:0,d:'No more bucket under the drip. Rust on your tools stops.'},
+ {id:'lights',n:'Fluorescent shop lights',p:24,rep:1,d:'Trade the bare bulb for real light. Customers notice a bright shop.'},
+ {id:'peg',n:'Pegboard tool wall',p:12,rep:1,d:'Every tool has a place, and you can see what you own.'},
+ {id:'paint',n:'Paint the walls',p:26,rep:1,d:'Navy and cream. It finally looks like a business.'},
+ {id:'sign',n:'Sign out front',p:35,rep:2,d:'People driving by know you exist. Every job pays $5 more.'},
+ {id:'hoist',n:'Used two-post hoist',p:150,rep:2,d:'Cars go up, you stand underneath. Only fits in a real bay, so it unlocks in Vernon.',town:'Vernon'},
+ {id:'counter',n:'Hire someone for the front counter',p:120,rep:2,d:'Someone answers the phone while you work. Unlocks when you reach Fast Start Max Pro.',lock:8}
+];
+const RANKS=[
+ {n:'Fast Start mini',s:'50 mL',at:0,bar:0},
+ {n:'Fast Start Max',s:'200 mL',at:4,bar:1},
+ {n:'Fast Start Max Pro',s:'375 mL',at:8,bar:2},
+ {n:'Fast Start Max Pro HD',s:'750 mL',at:14,bar:3},
+ {n:'Fast Start Max Pro XL',s:'1.14 L',at:20,bar:4}
+];
+const FLEET=6;
+
+const JOBS=[
+{ id:'mower', sp:[0,0,0,1,2,2], bp:[0,0], when:'June 1984', title:'1978 Briggs & Stratton push mower', art:'mower', pull:'PULL THE CORD',
+  cust:'Mrs. Kowalchuk', rel:'a widow from down the street', face:'#c9a07a', pay:25,
+  story:'It quit on me last fall. My husband always looked after it. It sat in the shed all winter, and now it won’t even sputter. Can you have a look, dear?',
+  checks:[
+   {id:'fuel',t:'Check the fuel',r:'Fresh gas in the tank. When you crack the bowl nut on the carburetor, fuel runs out. Fuel is getting through.'},
+   {id:'plug',t:'Pull the spark plug',r:'The plug is light tan and dry. It isn’t fouled.'},
+   {id:'spark',t:'Test for spark',r:'You ground the plug on the cylinder head and pull the cord. Nothing. Not a flicker.',tool:'tester',rt:'The spark tester stays dark on every pull. There is no spark at all.'},
+   {id:'comp',t:'Check compression',r:'Thumb over the plug hole, pull the cord: it pushes your thumb off hard. Compression feels good.',tool:'compg',rt:'The gauge reads healthy for a small engine with a compression release. Compression is good.'},
+   {id:'kill',t:'Check the kill switch wire',r:'The stop wire isn’t rubbing through to the deck. The kill switch isn’t grounding the ignition.'}
+  ],
+  diag:[
+   {t:'Burned breaker points and a tired condenser under the flywheel',ok:1,why:'Fuel is there, compression is there, but there is no spark. On an engine this age, the points and condenser live under the flywheel and wear out.'},
+   {t:'The mower is sulking because nobody used it all winter.',ok:0,why:'Engines don’t hold grudges. Fuel is getting through and compression is good. The missing piece is spark.'},
+   {t:'The grass is too long, so it gave up before it started.',ok:0,why:'It won’t start on the shop floor either, with no grass anywhere near it. There’s no spark.'},
+   {t:'The blade is dull.',ok:0,why:'A dull blade tears the grass, but it can’t stop an engine from firing. There’s no spark.'}
+  ],
+  dad:'An engine needs three things: fuel, spark and compression. Check all three before you spend a dime on parts.',
+  gpa:'That mower is older than the new solid-state ignitions. No spark on one of those means points and condenser, under the flywheel. And don’t you dare pry that flywheel off with a screwdriver.',
+  tools:['plugwr','screw','wrench','puller','feeler'],
+  parts:[
+   {id:'kit',n:'Points and condenser tune-up kit',p:6},
+   {id:'pts',n:'Breaker points only',p:4},
+   {id:'cond',n:'Condenser only',p:3},
+   {id:'plug',n:'New spark plug',p:2,ok:1},
+   {id:'key',n:'Flywheel key',p:1,ok:1},
+   {id:'coil',n:'New ignition armature',p:28},
+   {id:'carb',n:'Carburetor rebuild kit',p:9}
+  ],
+  need:s=>s.has('kit')||(s.has('pts')&&s.has('cond')),
+  needMsg:'Points and condenser are replaced as a pair. New points with an old condenser burn up fast, or never spark at all.',
+  steps:['Pull the wire off the spark plug so the engine can’t fire while you work.','Take off the blower housing.','Remove the flywheel nut and pull the flywheel with the puller.','Fit the new points and condenser, then set the point gap to .020" with the feeler gauge.','Check the flywheel key, then refit the flywheel and tighten the nut.','Set the armature air gap with the gauge and refit the housing.'],
+  bad:[
+   {t:'Whack the flywheel with the hammer until it lets go.',cost:15,msg:'Crack. You broke a fin off the flywheel. A used one from the wrecker costs you $15.'},
+   {t:'Give the mower a good kick. It works on the TV.',cost:0,nostart:1,msg:'Now your toe hurts, and the mower still has no spark.'}
+  ],
+  moral:{q:'Your cousin sells mowers at the hardware store. He says if you tell Mrs. Kowalchuk her mower is finished, he’ll sell her a new one and slip you $15.',
+   a:[{t:'Tell her the truth. Her mower is fixed and should run for years.',rep:2,cash:0,msg:'She tells everyone at church about the honest young mechanic. Word of mouth is worth more than $15.'},
+      {t:'Tell her it’s done for and take the $15.',rep:-3,cash:15,msg:'You pocket $15. Next month her neighbour fixes the old mower in ten minutes and tells her what you did.'}]},
+  lesson:{title:'Points, condensers and the jump to solid state',body:'For decades small engines made their spark with a magneto, a set of breaker points and a condenser hidden under the flywheel. The points open and close like a tiny switch, and they pit and burn with use. Briggs & Stratton moved to solid-state ignition starting in 1982, but older engines like Mrs. Kowalchuk’s still carry points. Remember the rule: a sheared flywheel key gives you a spark at the wrong time, and bad points give you no spark at all.'}
+},
+{ id:'saw', bp:[2,1], when:'September 1984', title:'1979 Homelite XL-12 chainsaw', art:'saw', pull:'PULL THE CORD',
+  cust:'Ray Gustafson', rel:'a faller who lives up the road', face:'#b9855a', pay:30,
+  story:'She sat in my shed two summers with mix in her. Pulls over fine but won’t even pop. I need her for firewood before the snow comes.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'A fat blue spark jumps on every pull.',tool:'tester',rt:'The spark tester flashes bright on every pull. Ignition is good.'},
+   {id:'plug',t:'Pull the spark plug',r:'The plug is bone dry. No fuel is reaching the cylinder.'},
+   {id:'prime',t:'Put a few drops of fresh mix in the plug hole',r:'It fires, runs for two seconds and dies. Spark and compression are fine. Fuel isn’t getting through on its own.'},
+   {id:'comp',t:'Check compression',r:'It pushes back hard on the pull. Compression is strong.',tool:'compg',rt:'The gauge reads strong compression.'},
+   {id:'tank',t:'Look inside the fuel tank',r:'You fish around with a hook. The fuel line inside is hard as a pencil and cracked right through. The filter is lying loose on the bottom of the tank.',req:'hook'}
+  ],
+  diag:[
+   {t:'Cracked, hardened fuel line in the tank sucking air, so no fuel reaches the carburetor',ok:1,why:'It runs on a prime and dies, the plug is dry, and the line inside the tank is cracked. The carburetor is pulling air through the crack instead of fuel.'},
+   {t:'The chain is on backwards.',ok:0,why:'A backwards chain won’t cut wood, but the engine would still run. This engine dies as soon as the prime is gone.'},
+   {t:'Ray’s saw is haunted.',ok:0,why:'Nothing haunted about it. It runs on a prime and dies, so fuel isn’t getting from the tank to the carburetor.'},
+   {t:'It needs a longer bar.',ok:0,why:'Bar length changes what it can cut, not whether it starts. Follow the fuel.'}
+  ],
+  dad:'If it fires on a prime and then quits, it’s starving for fuel. Follow the fuel back to where it starts.',
+  gpa:'Old saws rot their fuel lines from inside the tank, where nobody looks. And listen to me: never run a two-stroke on straight gas. The oil in the mix is the only thing keeping that piston alive.',
+  tools:['screw','hook','scrench','rags'],
+  parts:[
+   {id:'line',n:'Fuel line (fuel-rated)',p:3},
+   {id:'filt',n:'In-tank fuel filter',p:3},
+   {id:'mix',n:'Fresh gas and two-stroke oil',p:4},
+   {id:'tube',n:'Clear vinyl tubing from the pet store',p:1},
+   {id:'carb',n:'Carburetor rebuild kit',p:9},
+   {id:'coil',n:'Ignition coil',p:25},
+   {id:'chain',n:'New saw chain',p:14}
+  ],
+  need:s=>s.has('line')&&s.has('filt')&&s.has('mix'),
+  needMsg:'You need fuel-rated line, a new filter and fresh mixed fuel. Pet store tubing turns to mush in gasoline.',
+  steps:['Drain the old fuel into a can for proper disposal.','Fish the old line and filter out of the tank.','Push the new line through the tank grommet and onto the carburetor fitting.','Fit the new filter on the end of the line inside the tank.','Fill with fresh gas mixed with two-stroke oil at the ratio on the saw.','Prime it, set the choke and start it cold.'],
+  bad:[
+   {t:'Fill it with straight gas. The oil only makes smoke.',cost:35,msg:'It runs for a minute, screams, then seizes. With no oil in the mix you scored the piston and cylinder. New rings and a piston cost you $35.'},
+   {t:'Wrap the cracked line in electrical tape and call it good.',cost:0,nostart:1,msg:'The crack is inside the tank, under the gas. Tape doesn’t stick to anything soaking in fuel, and the saw still pulls air.'}
+  ],
+  extraBad:{id:'tube',msg:'The pet store tubing swells up and goes soft in the gas. The saw won’t pick up fuel.'},
+  moral:{q:'While the saw is apart you notice the chain is dull and a few cutters are chipped. Ray didn’t ask about the chain.',
+   a:[{t:'Show Ray the chain and let him decide.',rep:2,cash:0,msg:'Ray thanks you, buys a file and sharpens it himself. He also sends two of his buddies your way.'},
+      {t:'Put on a new chain without asking and add it to his bill.',rep:-2,cash:6,msg:'You make $6 on the chain. Ray pays, but he doesn’t like surprises on a bill, and he says so around town.'},
+      {t:'Say nothing about it.',rep:0,cash:0,msg:'Ray finds out the hard way in the woods. He isn’t angry, but he wonders why you didn’t mention it.'}]},
+  lesson:{title:'The power saw and BC’s forests',body:'BC’s early fallers worked with axes and long crosscut saws. The first power saws were heavy machines that took two men to handle. Lighter one-man saws arrived in the 1950s and changed the work in the bush for good. Every one of them ran on a two-stroke engine, which gets its only lubrication from the oil mixed into the gas. Mix it at the ratio the maker calls for, every time.'}
+},
+{ id:'bike', bp:[1,0], when:'October 1984', title:'1976 Honda Z50 minibike', art:'bike', pull:'KICK IT OVER',
+  cust:'Harjit Sandhu', rel:'whose kids ride the trails behind the gravel pit', face:'#a8774f', pay:35,
+  story:'My boy can only keep it running with the choke pulled all the way out. The second he pushes the choke in, it dies. It sat in the garage most of last year.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'Good spark.',tool:'tester',rt:'The tester flashes bright. Ignition is good.'},
+   {id:'plug',t:'Pull the spark plug',r:'Dry and a little sooty from running on the choke.'},
+   {id:'comp',t:'Check compression',r:'Strong compression.',tool:'compg',rt:'The gauge reads strong. The rings and valves are sealing.'},
+   {id:'bowl',t:'Drain the carburetor float bowl',r:'What comes out is brown and smells like old varnish. There’s gummy residue in the bottom of the bowl.'},
+   {id:'choke',t:'Run it on the choke, then open the choke',r:'It idles on full choke and stalls the moment you open it. Without the choke it isn’t getting enough fuel at low speed.'},
+   {id:'air',t:'Check the air filter',r:'Dusty, but air passes through it fine.'}
+  ],
+  diag:[
+   {t:'Varnish from old gas clogging the pilot jet and passages, so it runs lean at idle',ok:1,why:'Runs on choke, dies without it, and the bowl is full of varnish. The tiny pilot jet that feeds the engine at idle is plugged.'},
+   {t:'The minibike is too small for the kid.',ok:0,why:'Maybe, but that wouldn’t make it die when the choke goes in. It’s lean at idle.'},
+   {t:'The tires are low.',ok:0,why:'Low tires make it ride badly. They don’t make the engine stall. It needs the choke to stay running, so it’s short of fuel at low speed.'},
+   {t:'It needs a louder exhaust.',ok:0,why:'Louder doesn’t mean better, and it wouldn’t fix a hungry carburetor.'}
+  ],
+  dad:'Runs on choke, dies without it. That engine is hungry for fuel at low speed. Look at where the fuel gets metered.',
+  gpa:'Those little carburetors have a pilot jet with a hole no thicker than a hair. Old gas turns to varnish and plugs it shut. Clean it. Don’t ever drill it.',
+  tools:['screw','wrench','rags','air'],
+  parts:[
+   {id:'cleaner',n:'Can of carburetor cleaner',p:3},
+   {id:'gasket',n:'Float bowl gasket',p:2},
+   {id:'gas',n:'Fresh gas',p:2},
+   {id:'plug',n:'New spark plug',p:2,ok:1},
+   {id:'newcarb',n:'Complete new carburetor',p:45},
+   {id:'cam',n:'Cam chain',p:16}
+  ],
+  need:s=>s.has('cleaner')&&s.has('gasket')&&s.has('gas'),
+  needMsg:'You need carburetor cleaner, a new bowl gasket so it doesn’t leak, and fresh gas so it doesn’t varnish up again.',
+  steps:['Turn off the fuel tap and drain the float bowl.','Take the carburetor off the engine.','Remove the jets and soak the parts in carburetor cleaner.','Blow every jet and passage clear with compressed air.','Reassemble with a new bowl gasket and refit the carburetor.','Fill up with fresh gas and set the idle.'],
+  bad:[
+   {t:'Poke the jet open with a sewing needle, then a nail, then a drill bit.',cost:12,msg:'You oversized the jet. Now it runs rich and fouls plugs. A new jet costs you $12, and you lost a day.'},
+   {t:'Bang on the carburetor with the hammer while the kid kicks it over.',cost:0,nostart:1,msg:'It coughs and dies. You can’t knock varnish out of a jet from the outside.'}
+  ],
+  moral:{q:'Harjit pays in cash and asks you to write the invoice for a “new carburetor, $45” so he can put it through his brother-in-law’s business.',
+   a:[{t:'Write the invoice for the work you actually did.',rep:2,cash:0,msg:'Harjit grumbles, then laughs and says he was testing you. He sends his whole family’s small engines your way.'},
+      {t:'Write the fake invoice. It’s his problem, not yours.',rep:-3,cash:10,msg:'He tips you $10. A false invoice with your shop name on it is your problem too, and you know it.'}]},
+  lesson:{title:'Steam, gasoline and BC’s first cars',body:'Vancouver’s first car rolled onto its rutted streets in 1899, and it ran on steam. Even in 1900 plenty of people thought steam would win. The internal combustion engine won instead, and gasoline became its fuel. The first gasoline sold to a car owner in British Columbia was a four-gallon can from Imperial Oil in Vancouver. Old gas still causes more trouble than anything else, because it turns to varnish when it sits.'}
+},
+{ id:'sled', bp:[2,2], when:'January 1985', title:'1978 Ski-Doo Olympique snowmobile', art:'sled', pull:'PULL THE STARTER',
+  cust:'Gord Halvorsen', rel:'and his son Kyle', face:'#d1a67c', pay:45,
+  story:'Kyle tried to start it for an hour this morning at minus 22. Now it won’t even cough, and it stinks of gas. Did he wreck it?',
+  checks:[
+   {id:'spark',t:'Test for spark on both cylinders',r:'Both cylinders spark.',tool:'tester',rt:'The tester flashes on both cylinders. The magneto is fine.'},
+   {id:'plug',t:'Pull both spark plugs',r:'Both plugs are black and dripping wet with fuel.'},
+   {id:'comp',t:'Check compression',r:'Both cylinders push back hard and even.',tool:'compg',rt:'The gauge shows strong compression, even on both cylinders.'},
+   {id:'smell',t:'Smell the exhaust',r:'Raw gasoline. A lot of it.'},
+   {id:'choke',t:'Check the choke',r:'The choke lever is still pulled on. Kyle left it on the whole time.'}
+  ],
+  diag:[
+   {t:'Flooded, with fuel-fouled spark plugs',ok:1,why:'Wet black plugs, raw fuel at the exhaust, and the choke left on for an hour. It’s drowning in fuel. A wet plug can’t fire.'},
+   {t:'It’s too cold out for snowmobiles.',ok:0,why:'Snowmobiles are built for minus 22. This one is soaked in fuel.'},
+   {t:'Kyle broke it on purpose to get out of chores.',ok:0,why:'Kyle didn’t break anything. Both cylinders have spark and compression. The plugs are drowned in fuel.'},
+   {t:'The track is on backwards.',ok:0,why:'A backwards track would go the wrong way, but the engine would still start. The plugs are soaking wet.'}
+  ],
+  dad:'Smell that? It isn’t short of fuel. It’s drowning in it.',
+  gpa:'Pull the plugs and look at them. A wet black plug tells you the whole story. And whatever you do, don’t spray ether into a two-stroke.',
+  tools:['plugwr','gapper','rags'],
+  parts:[
+   {id:'plugs',n:'Pair of spark plugs, heat range per the manual',p:5},
+   {id:'ether',n:'Can of starting fluid (ether)',p:4},
+   {id:'seals',n:'Crankshaft seal kit',p:18},
+   {id:'mag',n:'Magneto coil',p:40}
+  ],
+  need:s=>s.has('plugs'),
+  needMsg:'Fouled plugs are done. Put in a fresh pair of the right heat range.',
+  steps:['Push the choke off.','Pull both plugs and wipe the fuel off the plug wells.','With the plugs out and throttle held open, pull the starter a dozen times to clear the fuel.','Gap the new plugs to the spec in the manual.','Install the new plugs and push the caps on.','Start it with no choke and a little throttle.'],
+  bad:[
+   {t:'Spray a whole can of ether into the intake.',cost:30,msg:'Ether washes the oil off the cylinder walls of a two-stroke. It fires, rattles and you score a piston. That costs you $30.'},
+   {t:'Light a fire under the hood to warm the engine up.',cost:25,msg:'You melt a fuel line and nearly lose the sled, the shop and your eyebrows. A new line and a fire extinguisher refill cost you $25.'}
+  ],
+  moral:{q:'Gord asks again: “Did Kyle wreck it?” Kyle is standing right there, staring at his boots.',
+   a:[{t:'Tell him the truth: it was only flooded. Show Kyle how to start it so it never happens again.',rep:3,cash:0,msg:'Kyle starts it himself on the first pull. Gord shakes your hand and books his truck in for spring.'},
+      {t:'Say it needed a major tune-up and charge him for one.',rep:-3,cash:25,msg:'You make $25 for work you didn’t do. Kyle saw you change two plugs, and kids talk.'}]},
+  lesson:{title:'A Canadian invention',body:'Joseph-Armand Bombardier built his snow machines in Valcourt, Quebec, and his company sold the first Ski-Doo in 1959. It changed winter life across Canada, from trappers in the north to families in the BC Interior. Two-strokes like this Olympique are simple and tough, but they flood easily. Read the plugs, clear the cylinders, and never use ether on a two-stroke.'}
+},
+{ id:'beetle', sp:[0,0,1,1,1,2], bp:[0,1], when:'April 1985', title:'1974 Volkswagen Super Beetle', art:'beetle', pull:'TURN THE KEY',
+  cust:'Linnea Berg', rel:'a nursing student', face:'#e2bf98', pay:45,
+  story:'It’s hard to start in the mornings, it shakes at stoplights and it pops out the tailpipe. I bought it three years ago and honestly, nobody has touched the engine since.',
+  checks:[
+   {id:'spark',t:'Test for spark on all four cylinders',r:'All four cylinders spark.',tool:'tester',rt:'The tester flashes on all four plug wires. Ignition is fine.'},
+   {id:'comp',t:'Run a compression test',r:'Cylinders 1, 2 and 4 read about 115 to 120 psi. Cylinder 3 reads 60.',req:'compg'},
+   {id:'listen',t:'Bring cylinder 3 up on compression and listen',r:'You can hear air hissing out of the tailpipe. Something is holding the exhaust valve on cylinder 3 open.'},
+   {id:'covers',t:'Pull the valve covers on the cold engine',r:'The .006" feeler slides in on most valves. On the cylinder 3 exhaust valve there’s no gap at all. The adjuster is tight against the valve stem.'},
+   {id:'oil',t:'Check the oil',r:'Dark but full. No milkiness. On an air-cooled engine there’s no coolant to mix with it anyway.'}
+  ],
+  diag:[
+   {t:'A tight valve on cylinder 3 holding the exhaust valve open, caught before it burned',ok:1,why:'No clearance, air hissing out the tailpipe and half the compression on one cylinder. The valve can’t close fully, so it leaks and runs hot. Set the clearance now and it should seal.'},
+   {t:'It needs a radiator flush.',ok:0,why:'A Beetle has no radiator. It’s air-cooled. Cylinder 3 is losing compression out the exhaust.'},
+   {t:'The engine is in the back. Move it to the front.',ok:0,why:'That’s where Volkswagen designed it to go, and millions of them ran fine that way. Cylinder 3 has a tight valve.'},
+   {t:'It’s out of blinker fluid.',ok:0,why:'There’s no such thing as blinker fluid. Air is hissing out the tailpipe because the exhaust valve on cylinder 3 can’t close.'}
+  ],
+  dad:'One cylinder with half the compression of the others. Listen to where the air is going. That tells you which valve isn’t closing.',
+  gpa:'Those air-cooled Volkswagens need their valves set every few thousand miles, stone cold, at .006. Nobody does it, and the number 3 exhaust valve pays the price. It runs hotter than the rest because the oil cooler sits in front of it.',
+  tools:['screw','wrench','feeler','compg'],
+  parts:[
+   {id:'gaskets',n:'Pair of valve cover gaskets',p:3},
+   {id:'oilch',n:'Oil change, 2.5 litres',p:6,ok:1},
+   {id:'valve',n:'New exhaust valve and a valve job',p:60},
+   {id:'pump',n:'Fuel pump',p:22},
+   {id:'rings',n:'Piston and ring set',p:48}
+  ],
+  need:s=>s.has('gaskets'),
+  needMsg:'The old valve cover gaskets are hard and will leak oil. Put new ones on when the covers go back on.',
+  steps:['Let the engine sit overnight until it’s stone cold.','Pull both valve covers.','Turn the engine to top dead centre on cylinder 1, with the rotor pointing at the number 1 mark.','Set both valves on that cylinder to .006" with the feeler gauge and tighten the lock nuts.','Turn the crankshaft 180 degrees and do the next cylinder in the firing order: 1, 4, 3, 2.','Fit new gaskets, refit the covers and run the compression test again.'],
+  bad:[
+   {t:'Adjust the valves with the engine running.',cost:0,nostart:1,msg:'You get sprayed with hot oil, and once the engine cools the clearances are all wrong.'},
+   {t:'Crank every adjuster down tight so it’s nice and quiet.',cost:40,msg:'Quiet for a week, then cylinder 3 burns its exhaust valve. Pulling the head and doing a valve job costs you $40.'}
+  ],
+  moral:{q:'Linnea counts out her money. She has $25 today and can bring the rest next month when her student loan comes in.',
+   a:[{t:'Give her the keys. She can pay the rest next month.',rep:2,cash:-20,iou:20,msg:'She drives off grateful. A student nurse doesn’t forget the mechanic who trusted her.'},
+      {t:'Keep the car until she can pay in full.',rep:0,cash:0,msg:'That’s fair, and it’s your right. She takes the bus to class for three weeks.'},
+      {t:'Let her take it, but add $10 interest for waiting.',rep:-2,cash:-20,iou:30,msg:'She pays it, and she tells her whole class about the $10.'}]},
+  lesson:{title:'Why the number 3 valve burns',body:'The Volkswagen Type 1 engine is cooled by air blown over its fins, and the oil cooler sits in front of cylinder 3. That cylinder runs hotter than the others, and its exhaust valve is the first to burn when nobody checks the clearance. Volkswagen eventually settled on .006" for every valve, set with the engine stone cold, and set in the firing order 1, 4, 3, 2.'}
+},
+{ id:'mgb', sp:[0,0,0,1,2,2], bp:[1,2], when:'July 1986', title:'1979 MGB roadster', art:'mgb', pull:'TURN THE KEY',
+  cust:'Dennis Ashworth', rel:'who wants to drive it to Expo 86 in Vancouver', face:'#d8b08a', pay:55,
+  story:'She starts and idles, but she won’t pull. I can’t get past about 40 kilometres an hour no matter what I do, and I’m driving down to Expo next week.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'Strong spark on all four cylinders.',tool:'tester',rt:'The tester flashes on every plug wire. Ignition is fine.'},
+   {id:'comp',t:'Check compression',r:'Even and healthy on all four cylinders.',tool:'compg',rt:'The gauge reads even, healthy compression on all four cylinders.'},
+   {id:'damper',t:'Unscrew the damper cap on the carburetor',r:'The dashpot is bone dry. There’s no damper oil in it at all.'},
+   {id:'lift',t:'Lift the air valve piston with a finger and let it drop',r:'It doesn’t rise and drop with a clean clunk. It feels limp, and you can hear air leaking around the top.'},
+   {id:'diaph',t:'Take the dashpot top off and look at the rubber diaphragm',r:'You hold it up to the light. There’s a split along the edge about two centimetres long.'},
+   {id:'fuel',t:'Check fuel flow',r:'The float bowl is full and fuel flows freely.'}
+  ],
+  diag:[
+   {t:'A split rubber diaphragm in the Zenith-Stromberg carburetor',ok:1,why:'The diaphragm seals the top of the carburetor so engine vacuum can lift the air valve. With a split in it, the valve can’t lift, so the engine can’t get more air and fuel. It idles fine but hits a wall.'},
+   {t:'British cars just do that.',ok:0,why:'Plenty of people say so. This one has a split diaphragm, and that can be fixed.'},
+   {t:'The top is down, so there’s too much wind.',ok:0,why:'Top up or top down, an MGB goes a lot faster than 40. The air valve in the carburetor can’t lift.'},
+   {t:'It misses England.',ok:0,why:'It might, but homesickness doesn’t split rubber. Look at the carburetor diaphragm.'}
+  ],
+  dad:'It idles fine and hits a wall. Something that should open up when you step on the gas isn’t opening.',
+  gpa:'Those Strombergs ride on a little rubber diaphragm. Hold it to the light and look for the tiniest crack. And keep the carb cleaner away from it, because that stuff eats rubber.',
+  tools:['screw','rags','wrench'],
+  parts:[
+   {id:'diaphragm',n:'Stromberg diaphragm',p:9},
+   {id:'dashoil',n:'Engine oil for the dashpot',p:1},
+   {id:'filter',n:'Fuel filter',p:4},
+   {id:'dizzy',n:'Rebuilt distributor',p:65},
+   {id:'twinsu',n:'Twin SU carburetor conversion',p:180}
+  ],
+  need:s=>s.has('diaphragm')&&s.has('dashoil'),
+  needMsg:'You need a new diaphragm, and the dashpot is dry, so it needs oil too. Without damper oil it will stumble every time you step on the gas.',
+  steps:['Take off the air cleaner.','Unscrew the damper and mark the dashpot top so it goes back the same way.','Remove the four screws and lift off the top and the spring.','Fit the new diaphragm with its locating tab in the slot, then refit the piston.','Refit the spring and the top, then fill the dashpot with engine oil to the right level.','Lift the piston to check it drops freely, then take it for a drive.'],
+  bad:[
+   {t:'Spray carburetor cleaner all over the new diaphragm so it’s nice and clean.',cost:9,msg:'The cleaner swells and softens the rubber. The new diaphragm is ruined, and another one costs you $9.'},
+   {t:'Patch the split in the old diaphragm with bubble gum.',cost:0,nostart:1,msg:'The gum lasts about four seconds. It still won’t go past 40.'}
+  ],
+  moral:{q:'Dennis is selling the car after Expo. He asks if you know how to wind the odometer back 50,000 miles.',
+   a:[{t:'Refuse. Rolling back an odometer is fraud, and the next owner would be the one paying for it.',rep:2,cash:0,msg:'Dennis shrugs and says he figured you’d say that. He sells it honestly and sends the buyer to you for service.'},
+      {t:'Do it for $40 cash.',rep:-4,cash:40,msg:'You make $40 for helping to cheat a stranger. In a town this size, the buyer brings it to the shop down the street and tells them who did it.'}]},
+  lesson:{title:'The carburetor built for American emissions rules',body:'MGBs left the factory with SU carburetors for years. As North American emissions rules tightened, cars bound for this side of the ocean got the Zenith-Stromberg instead. Where an SU relies on a precisely machined piston, the Stromberg uses a thin rubber diaphragm to make its seal. It works well until the rubber gets old, and carburetor cleaner destroys it. A split diaphragm gives you a car that idles fine and can’t get out of its own way.'}
+},
+{ id:'toyota', bp:[2,0], when:'February 1987', title:'1982 Toyota pickup, 22R engine', art:'truck', pull:'TURN THE KEY',
+  cust:'Wes Kowalski', rel:'who cuts firewood out past Lumby', face:'#b98a62', pay:80,
+  story:'I was hauling a full load of wood up the hill and the needle went right into the red. I let it cool off and limped it home. Now it barely starts, runs rough as a cob and blows white smoke that smells sweet.',
+  checks:[
+   {id:'comp',t:'Run a compression test',r:'Cylinder 1: 150 psi. Cylinder 2: 85. Cylinder 3: 80. Cylinder 4: 148. Two cylinders side by side are both low.',req:'compg'},
+   {id:'dip',t:'Pull the dipstick',r:'The oil looks like a chocolate milkshake. Coolant is getting into the oil.'},
+   {id:'rad',t:'Check the coolant level with the engine cold',r:'The radiator is down about two litres.'},
+   {id:'smoke',t:'Watch the exhaust',r:'White smoke that smells sweet. That’s coolant burning.'},
+   {id:'spark',t:'Test for spark',r:'Good spark on all four cylinders.',tool:'tester',rt:'The tester flashes on all four wires. Ignition is fine.'}
+  ],
+  diag:[
+   {t:'Blown head gasket between cylinders 2 and 3 from overheating',ok:1,why:'Two neighbouring cylinders low on compression, coolant in the oil, sweet white smoke and a low radiator. Overheating let the head gasket fail between cylinders 2 and 3.'},
+   {t:'The truck is tired from hauling all that wood.',ok:0,why:'Trucks don’t get tired. Two cylinders next to each other are low and there’s coolant in the oil.'},
+   {t:'Somebody put sugar in the gas tank.',ok:0,why:'Sugar doesn’t dissolve in gasoline, and it couldn’t put coolant in the oil. The head gasket failed when it overheated.'},
+   {t:'The tailgate was left down, so it overheated from the drag.',ok:0,why:'An open tailgate doesn’t cook an engine. A hard pull up a hill with too much load did, and the head gasket gave out.'}
+  ],
+  dad:'Two cylinders next to each other are both low. What sits between two cylinders and seals them?',
+  gpa:'Sweet white smoke and milkshake on the dipstick. You know what that is. Check the head for warpage before you put it back together, or you’ll be doing the job twice.',
+  tools:['sockets','torque','straight','feeler','compg','screw','rags'],
+  parts:[
+   {id:'gasket',n:'Head gasket set',p:28},
+   {id:'oil',n:'Oil and filter, flushed twice',p:16},
+   {id:'coolant',n:'Antifreeze and a new thermostat',p:14},
+   {id:'sealer',n:'Can of head gasket sealer',p:6},
+   {id:'head',n:'New cylinder head',p:240},
+   {id:'chain',n:'Timing chain set',p:55}
+  ],
+  need:s=>s.has('gasket')&&s.has('oil')&&s.has('coolant'),
+  needMsg:'You need the gasket set, fresh oil and filter to flush out the coolant, and fresh antifreeze with a new thermostat. The old thermostat is suspect after an overheat.',
+  steps:['Drain the coolant and the milky oil.','Take off the manifolds and the valve cover, then remove the head.','Check the head for warpage with a straightedge and feeler gauge, and send it to the machine shop if it’s out.','Clean both surfaces and lay the new gasket on dry.','Torque the head bolts in the factory sequence, in stages.','Refill the oil and coolant, bleed the air out and set the timing.'],
+  bad:[
+   {t:'Tighten the head bolts as hard as you can with a cheater bar, any order you like.',cost:60,msg:'You pulled the head down unevenly and warped it, and you stretched two bolts. The machine shop and new bolts cost you $60.'},
+   {t:'Pour a can of gasket sealer and a box of oatmeal into the radiator.',cost:0,nostart:1,msg:'It still blows white smoke, and now the radiator is full of porridge. Nothing in a can fixes a gasket that has burned through between two cylinders.'}
+  ],
+  moral:{q:'Before you start, Wes asks you to dump a can of sealer in the radiator so he can sell the truck to a kid in town without mentioning the overheat.',
+   a:[{t:'Tell him you won’t help hide it. Offer to fix it properly instead.',rep:3,cash:0,msg:'Wes grumbles, then lets you do the job right. A year later he’s still driving it and telling people about you.'},
+      {t:'Do it. It’s his truck and his sale.',rep:-4,cash:15,msg:'You take $15. Two weeks later the kid is broken down on Highway 6 with a truck he can’t afford to fix.'}]},
+  lesson:{title:'The last of the double chains',body:'From 1975 to 1982, Toyota’s 20R and 22R engines used a double-row timing chain with steel guides, and it was very reliable. In 1983 Toyota switched to a single-row chain with plastic guides, which stretches and breaks its guides far more often. Wes’s 1982 is the last of the tough ones. Its weak spot was heat, and the lesson is old as engines: when the needle hits the red, pull over and shut it off.'}
+}
+
+];
+const ROAD=[
+ ['1986 Oldsmobile Cutlass','1988'],
+ ['1989 Volvo 240 DL','1990'],['1953 Buick Special','Classic job'],['1971 Chevy C10, bright green','Classic job'],['1973 Volvo 1800ES','Classic job'],
+ ['A P1800 with three million miles on it','Classic job'],['Fleet trucks','Fast Start Fleet'],['Turbo rebuilds','The 1990s'],['Nissan Skyline and Subaru SVX','The 1990s'],
+ ['Dodge Cummins and Duramax diesels','The 2000s'],['A dragster on 104-octane fuel','Master mechanic'],['Your own shop, your house and your own classic car collection','The dream']
+];
+
+/* ---------- state ---------- */
+let S=null;
+function fresh(name){return{name,town:'Falkland',iou:0,cash:60,rep:0,fs:0,job:0,loan:0,tools:Object.keys(TOOLS).filter(k=>TOOLS[k].start),upg:[],seen:['intro'],done:[],truck:false}}
+function save(){store.set(S)}
+function rankOf(n){let r=RANKS[0];for(const x of RANKS)if(n>=x.at)r=x;return r}
+function bars(b){return '<span class="bars">'+[0,1,2,3,4].map(i=>'<i class="'+(i===b?'r':'')+'"></i>').join('')+'</span>'}
+function statHTML(){const r=rankOf(S.fs);return `<div><span class="lab">Cash</span><b>$${S.cash}</b>${S.loan?'<span class="small"> owes Dad $'+S.loan+'</span>':''}</div>
+ <div><span class="lab">Reputation</span><b>${S.rep>0?'+':''}${S.rep}</b></div>
+ <div style="text-align:right"><span class="lab">Fast Starts: ${S.fs}</span>${bars(r.bar)}</div>`}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)}
+function modal(html){$('modalCard').innerHTML=html;$('modal').classList.add('on');const b=$('modalCard').querySelector('[data-close]');if(b)b.onclick=closeModal}
+function closeModal(){$('modal').classList.remove('on')}
+function spend(amt,what,then){
+  if(S.cash>=amt){S.cash-=amt;save();then();return}
+  const short=amt-S.cash;
+  modal(`<h3>Short on cash</h3><p>${esc(what)} costs $${amt}, and you have $${S.cash}.</p><p>Dad will lend you the $${short} difference. It comes off your next payday.</p>
+   <button class="btn" id="loanYes">ASK DAD</button><button class="btn cream" data-close>NEVER MIND</button>`);
+  $('loanYes').onclick=()=>{S.loan+=short;S.cash=0;save();closeModal();then()};
+}
+
+/* ---------- drawings ---------- */
+function machineSVG(k){
+ const base='<rect x="0" y="0" width="400" height="200" fill="#11284a"/><rect x="0" y="150" width="400" height="50" fill="#3a3a38"/><ellipse cx="200" cy="168" rx="150" ry="10" fill="#000" opacity=".35"/>';
+ const m={
+  mower:`<rect x="110" y="120" width="190" height="34" rx="10" fill="#7d1f17"/><rect x="110" y="120" width="190" height="8" fill="#a8291e"/>
+   <circle cx="130" cy="158" r="14" fill="#222"/><circle cx="130" cy="158" r="5" fill="#888"/><circle cx="285" cy="158" r="14" fill="#222"/><circle cx="285" cy="158" r="5" fill="#888"/>
+   <rect x="170" y="78" width="80" height="44" rx="6" fill="#bfbfbf"/><rect x="170" y="78" width="80" height="10" fill="#e6e6e6"/><rect x="182" y="64" width="34" height="18" rx="3" fill="#E9C243"/>
+   <rect x="232" y="90" width="26" height="16" fill="#555"/><path d="M110 125 L40 40 M120 125 L52 40" stroke="#888" stroke-width="5"/><rect x="30" y="34" width="34" height="8" rx="4" fill="#222"/>`,
+  saw:`<rect x="90" y="88" width="120" height="58" rx="12" fill="#c5c5c0"/><rect x="90" y="88" width="120" height="14" rx="6" fill="#E9C243"/>
+   <rect x="205" y="104" width="160" height="22" rx="11" fill="#9aa0a6"/><rect x="205" y="102" width="160" height="4" fill="#333"/><rect x="205" y="124" width="160" height="4" fill="#333"/>
+   <path d="M100 88 Q110 50 160 56 Q190 60 190 88" fill="none" stroke="#222" stroke-width="8"/><rect x="60" y="110" width="40" height="14" rx="6" fill="#222"/>
+   <circle cx="130" cy="118" r="10" fill="#666"/>`,
+  bike:`<circle cx="110" cy="138" r="30" fill="#222"/><circle cx="110" cy="138" r="14" fill="#999"/><circle cx="290" cy="138" r="30" fill="#222"/><circle cx="290" cy="138" r="14" fill="#999"/>
+   <path d="M110 138 L170 96 L250 96 L290 138" stroke="#bbb" stroke-width="7" fill="none"/><path d="M270 60 L290 138" stroke="#bbb" stroke-width="6"/><rect x="250" y="54" width="44" height="6" rx="3" fill="#222"/>
+   <path d="M168 80 Q205 58 250 80 L245 96 L172 96Z" fill="#c22"/><rect x="140" y="74" width="40" height="12" rx="6" fill="#222"/><rect x="180" y="104" width="54" height="34" rx="6" fill="#aaa"/>`,
+  beetle:`<path d="M70 150 Q70 80 160 70 Q230 64 290 100 Q330 120 335 150Z" fill="#2f7d8a"/><path d="M120 108 Q150 80 200 80 L205 108Z" fill="#cfe3f0"/><path d="M212 82 Q250 86 272 108 L212 108Z" fill="#cfe3f0"/>
+   <circle cx="125" cy="152" r="22" fill="#222"/><circle cx="125" cy="152" r="9" fill="#bbb"/><circle cx="285" cy="152" r="22" fill="#222"/><circle cx="285" cy="152" r="9" fill="#bbb"/><rect x="60" y="138" width="20" height="5" fill="#ccc"/><rect x="325" y="138" width="20" height="5" fill="#ccc"/>`,
+  mgb:`<path d="M50 150 L60 118 Q120 104 170 106 L200 92 L230 92 L250 108 Q320 110 350 128 L352 150Z" fill="#A8291E"/><path d="M200 92 L230 92 L244 106 L205 106Z" fill="#cfe3f0"/>
+   <rect x="40" y="140" width="30" height="10" rx="4" fill="#111"/><rect x="335" y="140" width="25" height="10" rx="4" fill="#111"/><circle cx="110" cy="152" r="20" fill="#222"/><circle cx="110" cy="152" r="9" fill="#ccc"/><circle cx="295" cy="152" r="20" fill="#222"/><circle cx="295" cy="152" r="9" fill="#ccc"/>`,
+  truck:`<rect x="60" y="110" width="170" height="36" fill="#7b6a4a"/><path d="M230 146 L230 84 L290 84 L312 112 L345 116 L348 146Z" fill="#c9b27c"/><path d="M240 92 L285 92 L302 112 L240 112Z" fill="#cfe3f0"/>
+   <rect x="70" y="98" width="150" height="14" fill="#6b4f2c"/><rect x="80" y="86" width="40" height="14" fill="#8a6a45"/><rect x="130" y="88" width="40" height="12" fill="#8a6a45"/>
+   <circle cx="110" cy="152" r="22" fill="#222"/><circle cx="110" cy="152" r="9" fill="#999"/><circle cx="300" cy="152" r="22" fill="#222"/><circle cx="300" cy="152" r="9" fill="#999"/>`,
+  sled:`<path d="M60 150 L330 150 Q360 150 360 135 L330 135" stroke="#222" stroke-width="6" fill="none"/>
+   <path d="M90 140 L250 140 L300 110 L300 90 L220 76 L130 96 L90 112Z" fill="#E9C243"/><path d="M220 76 L300 90 L300 110 L240 104Z" fill="#111"/>
+   <rect x="150" y="84" width="60" height="14" rx="5" fill="#222"/><rect x="80" y="128" width="150" height="20" rx="8" fill="#333"/><path d="M200 70 L216 52" stroke="#888" stroke-width="5"/><rect x="204" y="48" width="30" height="6" rx="3" fill="#222"/>`
+ };
+ return `<svg viewBox="0 0 400 200" role="img" aria-label="${esc(k)}">${base}${m[k]||''}</svg>`;
+}
+function garageSVG(){
+ const u=id=>S.upg.includes(id), t=S.tools.length;
+ const vb=S.town==='Vernon';
+ const wall=u('paint')?'<rect width="400" height="170" fill="#EFE6D2"/><rect y="120" width="400" height="50" fill="#0E2442"/><rect y="116" width="400" height="5" fill="#A8291E"/>'
+  :vb?'<rect width="400" height="170" fill="#8d8f8c"/>'+Array.from({length:12},(_,r)=>Array.from({length:9},(_,c)=>`<rect x="${c*46+(r%2)*23-10}" y="${r*15}" width="44" height="13" fill="#9a9c99"/>`).join('')).join(''):'<rect width="400" height="170" fill="#7a5a3a"/>'+[20,95,170,245,320].map(x=>`<rect x="${x}" y="0" width="2" height="170" fill="#4d3824"/>`).join('')+'<ellipse cx="70" cy="60" rx="30" ry="18" fill="#5a4129" opacity=".6"/><ellipse cx="300" cy="100" rx="40" ry="14" fill="#5a4129" opacity=".5"/><path d="M200 0 L210 40 L204 80" stroke="#3b2a19" stroke-width="2" fill="none"/>';
+ const light=u('lights')?'<rect x="80" y="8" width="90" height="7" rx="3" fill="#f6fbff"/><rect x="230" y="8" width="90" height="7" rx="3" fill="#f6fbff"/><rect width="400" height="240" fill="#fff" opacity=".06"/>'
+  :'<line x1="200" y1="0" x2="200" y2="20" stroke="#111" stroke-width="2"/><circle cx="200" cy="26" r="8" fill="#ffe9a0"/><circle cx="200" cy="26" r="70" fill="#ffd56a" opacity=".12"/>';
+ const peg=u('peg')?`<rect x="250" y="34" width="130" height="70" fill="#b08a5a" stroke="#6b4f2c" stroke-width="2"/>`+Array.from({length:Math.min(t,14)},(_,i)=>`<rect x="${258+(i%7)*17}" y="${42+Math.floor(i/7)*30}" width="6" height="22" rx="2" fill="${i%3?'#9aa':'#A8291E'}"/>`).join('')
+  :'<rect x="262" y="70" width="70" height="30" fill="#4a4a48"/><text x="297" y="90" font-size="10" fill="#ddd" text-anchor="middle">TOOLBOX</text>';
+ const leak=(u('roof')||vb)?'':'<rect x="150" y="186" width="26" height="22" fill="#8a8f96"/><ellipse cx="163" cy="186" rx="13" ry="4" fill="#5f6670"/><line x1="163" y1="0" x2="163" y2="170" stroke="#9cc" stroke-width="1" stroke-dasharray="3 14"/>';
+ const sign=u('sign')?`<rect x="20" y="16" width="160" height="30" rx="4" fill="#0E2442" stroke="#E9C243" stroke-width="3"/><text x="100" y="37" font-size="13" font-weight="900" font-style="italic" fill="#E9C243" text-anchor="middle" font-family="Barlow Condensed,sans-serif">${esc(S.name.toUpperCase())}'S SMALL ENGINES</text>`:'';
+ const tally='<rect x="24" y="62" width="96" height="62" fill="#1d2a22" stroke="#6b4f2c" stroke-width="4"/><text x="72" y="78" font-size="10" fill="#ddd" text-anchor="middle" font-family="Barlow Condensed,sans-serif">FAST STARTS</text>'
+  +Array.from({length:Math.min(S.fs,20)},(_,i)=>{const g=Math.floor(i/5),j=i%5,x=34+(g%2)*42+j*7,y=86+Math.floor(g/2)*22;return j===4?`<line x1="${x-30}" y1="${y+14}" x2="${x+2}" y2="${y}" stroke="#eee" stroke-width="2"/>`:`<line x1="${x}" y1="${y}" x2="${x}" y2="${y+16}" stroke="#eee" stroke-width="2"/>`}).join('');
+ const bench='<rect x="190" y="132" width="190" height="10" fill="#6b4f2c"/><rect x="196" y="142" width="8" height="40" fill="#4d3824"/><rect x="366" y="142" width="8" height="40" fill="#4d3824"/><rect x="230" y="114" width="60" height="18" rx="3" fill="#a8291e"/><rect x="300" y="120" width="40" height="12" fill="#888"/>';
+ const counter=u('counter')?'<rect x="20" y="140" width="110" height="44" fill="#0E2442"/><circle cx="60" cy="122" r="12" fill="#c9a07a"/><rect x="50" y="132" width="22" height="10" fill="#A8291E"/>':'';
+ const vern=S.town==='Vernon';
+ const door=vern?'<rect x="134" y="40" width="110" height="130" fill="#9aa3ad" stroke="#333" stroke-width="3"/>'+Array.from({length:9},(_,i)=>`<line x1="134" y1="${54+i*13}" x2="244" y2="${54+i*13}" stroke="#6f7780" stroke-width="2"/>`).join('')+'<rect x="140" y="60" width="98" height="14" fill="#cfe3f0" opacity=".8"/>':'';
+ const hoist=u('hoist')?'<rect x="128" y="60" width="8" height="120" fill="#A8291E"/><rect x="242" y="60" width="8" height="120" fill="#A8291E"/><rect x="128" y="56" width="122" height="6" fill="#A8291E"/>':'';
+ return `<svg viewBox="0 0 400 240" role="img" aria-label="Your shop">${wall}<rect y="170" width="400" height="70" fill="${u('paint')?'#6b6b68':'#4b4b48'}"/><ellipse cx="300" cy="205" rx="30" ry="6" fill="#222" opacity=".5"/>${door}${hoist}${light}${sign}${tally}${peg}${bench}${counter}${leak}</svg>`;
+}
+
+/* ---------- shop ---------- */
+function renderShop(){
+ $('statShop').innerHTML=statHTML();
+ const town=S.town||'Falkland';$('shopName').textContent=(S.upg.includes('sign')?S.name+'’s Small Engines, '+town:(town==='Vernon'?S.name+'’s rented bay, Vernon':S.name+'’s rented shed, Falkland'));
+ $('garage').innerHTML=garageSVG();
+ const j=JOBS[S.job];
+ let msg='';
+ if(!j)msg=`<div class="card dark"><h3>Season two is done</h3><p>You started in a leaky shed in Falkland with a rusty hammer. Now you run a real bay in Vernon, and people bring you cars. A 1986 Oldsmobile Cutlass is booked in for 1988. That job, and the cars after it, are coming in the next update.</p><p>You earned ${S.fs} Fast Start${S.fs===1?'':'s'} and you rank as <b>${esc(rankOf(S.fs).n)}</b>.</p></div>`;
+ else msg=`<div class="card" id="upNext" style="cursor:pointer"><h3>${S.job===0?'Your first job':'Your next job'}: ${esc(j.when)}</h3><p><b>${esc(j.cust)}</b> is bringing in a <b>${esc(j.title)}</b>. ${S.job===0?'Tap the button below to get started.':'Tap the button below when you’re ready.'}</p></div>`;
+ if(S.truck&&j)msg+=`<div class="card dark"><h3>The Fighter Tools truck is parked out front</h3><p>The driver gives you tool truck prices, which beat the hardware store by about a third.</p></div>`;
+ $('shopMsg').innerHTML=msg;
+ $('nextJobBtn').style.display=j?'':'none';
+ $('nextJobBtn').textContent=S.job===0?'LET’S GET STARTED':'START THE NEXT JOB';
+ const un=$('upNext');if(un)un.onclick=()=>{audioOn();startJob()};
+ $('truckBtn').disabled=!S.truck;
+}
+function openTruck(){
+ const list=Object.entries(TOOLS).filter(([k,v])=>!v.start).map(([k,v])=>{const own=S.tools.includes(k);
+  return `<button class="opt ${own?'done':''}" data-t="${k}" ${own?'disabled':''}>${esc(v.n)}<span class="res">${own?'On your pegboard':'$'+v.p+' from the truck'}</span></button>`}).join('');
+ modal(`<img src="fighter.png" alt="Fighter" style="width:70%;margin:0 auto"><h3 class="center" style="color:var(--navy)">TOOLS</h3><p class="small center">Built to fight. Lifetime warranty if you don’t abuse them.</p>${list}<button class="btn wide" data-close>DONE</button>`);
+ document.querySelectorAll('#modalCard [data-t]').forEach(b=>b.onclick=()=>{const k=b.dataset.t;spend(TOOLS[k].p,TOOLS[k].n,()=>{S.tools.push(k);save();sfx.clank();renderShop();openTruck()})});
+}
+function openFix(){
+ const list=UPG.map(u=>{const own=S.upg.includes(u.id)||(u.id==='roof'&&S.town==='Vernon'),lock=(u.lock&&S.fs<u.lock)||(u.town&&S.town!==u.town);
+  return `<button class="opt ${own?'done':''} ${lock?'locked':''}" data-u="${u.id}" ${own||lock?'disabled':''}>${esc(u.n)} · $${u.p}<span class="res">${own?'Done.':esc(u.d)}</span></button>`}).join('');
+ modal(`<h3>Fix up the shop</h3><p>Every dollar here is a dollar you didn’t spend on tools. Choose carefully.</p>${list}<button class="btn wide" data-close>DONE</button>`);
+ document.querySelectorAll('#modalCard [data-u]').forEach(b=>b.onclick=()=>{const u=UPG.find(x=>x.id===b.dataset.u);spend(u.p,u.n,()=>{S.upg.push(u.id);S.rep+=u.rep;save();sfx.ok();renderShop();openFix()})});
+}
+function openRanks(){
+ const r=rankOf(S.fs);
+ const rows=RANKS.map(x=>`<div class="rank ${x===r?'on':''}">${bars(x.bar)}<span class="cond">${esc(x.n)}</span><span>${x.at} Fast Start${x.at===1?'':'s'}</span></div>`).join('');
+ modal(`<h3>The Fast Start tally</h3><p>Every engine that fires on the first try is a Fast Start. Four Fast Starts moves you up a size, and the bar code on the label shows where you stand.</p>
+  <div style="background:var(--navy);color:var(--cream);padding:8px;border-radius:10px">${rows}<div class="rank ${S.fs>=FLEET?'on':''}"><span class="cond">Fast Start Fleet</span><span>${FLEET} Fast Starts unlocks fleet work</span></div></div>
+  <p class="small">You have ${S.fs}.</p><button class="btn wide" data-close>OK</button>`);
+}
+function openRoad(){
+ modal(`<h3>The road ahead</h3><p>Every year, the machines get bigger and the problems get harder. Here’s what’s coming to your shop.</p>${ROAD.map(r=>`<div class="opt locked">${esc(r[0])}<span class="res">${esc(r[1])}</span></div>`).join('')}<button class="btn wide" data-close>BACK TO WORK</button>`);
+}
+
+/* ---------- lessons ---------- */
+const INTRO=[
+ {title:'Falkland, June 1984',body:'You rent a leaky shed behind the gas station in Falkland, on Highway 97 between Vernon and Kamloops, for $40 a month. The Stampede crowds went home a few weeks ago, the way they have every spring since 1919. You own a screwdriver set, a garage-sale box of wrenches, a spark plug wrench from Dad’s old car and a rusty hammer. You have $60 of birthday money. It’s a start.'},
+ {title:'Before Fast Start 104, there was the Fast Start',body:'Long before this, George Hartley converted his 1924 Dodge to run on ultra-pure ethanol that he made himself, and he drove it around Jasper. He called it the Fast Start. He was a tinkerer who could make anything run. Fast Start 104 from Deep Blue Distilleries is named for him. In this game, every engine you get running on the first try is a Fast Start.'}
+];
+const MOVE={title:'Spring 1985: moving to Vernon',tag:'Your shop',body:'Falkland gave you your start, but the work is in Vernon, about 42 kilometres down Highway 97. You load your tools into Dad’s truck and rent a real bay with a roll-up door on the edge of town. Your Falkland customers still drive down to see you. From now on the jobs get bigger: cars and trucks.'};
+let lessonQ=[],lessonDone=null;
+function lessons(arr,then){lessonQ=arr.slice();lessonDone=then;nextLesson()}
+function nextLesson(){const l=lessonQ.shift();if(!l){lessonDone&&lessonDone();return}
+ $('lessonCard').innerHTML=`<p class="small">${esc(l.tag||'Shop history')}</p><h2>${esc(l.title)}</h2><p style="font-size:17px">${esc(l.body)}</p>`;
+ show('sLesson')}
+$('lessonBtn').onclick=nextLesson;
+
+/* ---------- job flow ---------- */
+let J=null,st=null;
+const STAGES=['Work order','Inspect','Diagnose','Tools','Parts','Repair','Start it'];
+function startJob(){
+ J=JOBS[S.job];
+ st={stage:0,seen:new Set(),diagTries:0,diagOK:false,tips:0,tools:new Set(),parts:new Set(),paid:new Set(),partCost:0,toolFails:0,stepTries:0,seq:[],damage:0};
+ renderJob();show('sJob');
+}
+function head(){
+ $('statJob').innerHTML=statHTML();
+ $('stepBar').innerHTML=STAGES.map((s,i)=>`<span class="${i<=st.stage?'d':''}" title="${s}"></span>`).join('');
+}
+function tipBar(){return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $5</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $10</button></div>`}
+function bindTips(){
+ const t=(who,cost,txt)=>spend(cost,'Advice from '+who,()=>{st.tips++;head();modal(`<div class="who"><div class="face" style="background:${who==='Dad'?'#c7976b':'#e0c8a8'}"></div><h3>${who} says</h3></div><p style="font-size:17px">“${esc(txt)}”</p><button class="btn wide" data-close>THANKS</button>`)});
+ const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5,J.dad);if(g)g.onclick=()=>t('Grandpa',10,J.gpa);
+}
+const GUIDE=[
+ 'Listen to the customer first. They usually tell you more than they know. When you’re ready, tap Take the Job.',
+ 'Every engine needs three things: fuel, spark and compression. Tap the checks to find out which one is missing. When you think you know, tap the yellow button.',
+ 'Pick the cause that fits everything you found. If you guess wrong, read why. That’s how you learn it.',
+ 'Think about the whole job: taking it apart, fixing it, setting it up and putting it back together. Tap each tool you’ll need. If you don’t own one, you’ll have to buy it.',
+ 'Only buy what the job needs. The customer pays you back for the parts the job needed, not for your guesses.',
+ 'The repair comes in three stages: take it apart, do the fix, put it back together. Tap the steps for each stage in order, and skip anything a good mechanic wouldn’t do.',
+ 'Here goes. If you did everything right, it fires on the first pull.'
+];
+function addGuide(){if(S.job>1)return;const g=GUIDE[st.stage];if(!g||$('guide'))return;
+ $('jobBody').insertAdjacentHTML('afterbegin',`<div class="card dark" id="guide" style="margin-top:4px"><div class="who"><div class="face" style="background:#c7976b;width:44px;height:44px"></div><div><b style="color:var(--yel)">Dad</b><p style="margin:2px 0">${esc(g)}</p></div></div></div>`)}
+function renderJob(){
+ head();const b=$('jobBody');
+ const sg=st.stage;
+ if(sg===0){
+  b.innerHTML=`<p class="small">${esc(J.when)} · Work order #${S.job+101}</p><h2>${esc(J.title)}</h2><div class="fig">${machineSVG(J.art)}</div>
+   <div class="card"><div class="who"><div class="face" style="background:${J.face}"></div><div><b>${esc(J.cust)}</b><br><span class="small">${esc(J.rel)}</span></div></div>
+   <p style="font-size:17px">“${esc(J.story)}”</p><p class="small">Pays $${J.pay+(S.upg.includes('sign')?5:0)} for labour, plus parts at cost.</p></div>
+   <button class="btn wide" id="go">TAKE THE JOB</button>`;
+  $('go').onclick=()=>{st.stage=1;renderJob()};
+ }
+ if(sg===1){
+  b.innerHTML=`<h2>Inspect it</h2><p>Tap each check. Look before you buy anything.</p>`+J.checks.map(c=>{const seen=st.seen.has(c.id),has=c.tool&&S.tools.includes(c.tool),needT=c.req&&!S.tools.includes(c.req);
+   return `<button class="opt ${seen?'done':''}" data-c="${c.id}">${esc(c.t)}${needT&&!seen?' <span class="small">(needs a '+esc(TOOLS[c.req].n.toLowerCase())+': $'+Math.round(TOOLS[c.req].p*MARKUP)+' at the hardware store)</span>':''}${seen?`<span class="res">${esc(has&&c.rt?c.rt:c.r)}</span>`:''}</button>`}).join('')
+   +`<button class="btn wide" id="go" ${st.seen.size<2?'disabled':''}>I KNOW WHAT’S WRONG</button>`+tipBar();
+  b.querySelectorAll('[data-c]').forEach(x=>x.onclick=()=>{const c=J.checks.find(q=>q.id===x.dataset.c);
+   const go=()=>{st.seen.add(c.id);sfx.clank();renderJob()};
+   if(c.req&&!S.tools.includes(c.req)&&!st.seen.has(c.id)){const pr=Math.round(TOOLS[c.req].p*MARKUP);spend(pr,TOOLS[c.req].n,()=>{S.tools.push(c.req);save();go()})}else go()});
+  $('go').onclick=()=>{st.stage=2;renderJob()};bindTips();
+ }
+ if(sg===2){
+  b.innerHTML=`<h2>What’s wrong with it?</h2><p>Pick the cause. A wrong call costs you $3 in time and parts you didn’t need, and it costs you the Fast Start.</p>`+(st.dorder||(st.dorder=J.diag.map((_,i)=>i).sort(()=>Math.random()-.5))).map(i=>`<button class="opt" data-d="${i}">${esc(J.diag[i].t)}</button>`).join('')+`<div id="dRes"></div>`+tipBar()+`<button class="btn ghost" id="back">LOOK AGAIN</button>`;
+  b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{const d=J.diag[+x.dataset.d];st.diagTries++;
+   if(d.ok){st.diagOK=true;sfx.ok();x.classList.add('done');$('dRes').innerHTML=`<div class="card"><h3>${st.diagTries===1?'Right the first time':'That’s it'}</h3><p>${esc(d.why)}</p><button class="btn wide" id="go">GET THE TOOLS</button></div>`;
+    b.querySelectorAll('[data-d]').forEach(y=>y.disabled=true);$('go').onclick=()=>{st.stage=3;renderJob()};}
+   else{sfx.bad();x.classList.add('bad');x.disabled=true;S.cash=Math.max(0,S.cash-3);save();head();$('dRes').innerHTML=`<div class="card"><h3>Not that</h3><p>${esc(d.why)}</p></div>`}});
+  $('back').onclick=()=>{st.stage=1;renderJob()};bindTips();
+ }
+ if(sg===3)dragStage('tools');
+ if(sg===4)dragStage('parts');
+ if(sg===5)stepsStage();
+ if(sg===6)crankStage();
+ addGuide();
+}
+
+/* drag and drop with tap fallback */
+function dragStage(kind){
+ const b=$('jobBody');const isT=kind==='tools';const sel=isT?st.tools:st.parts;
+ const extra=Object.keys(TOOLS).filter(k=>!J.tools.includes(k));const distract=extra.filter((k,n)=>(n*7+S.job*3)%extra.length<3);
+ const pal=[...Object.keys(TOOLS).filter(k=>J.tools.includes(k)||distract.includes(k))];
+ const items=isT?pal.map(k=>({id:k,n:TOOLS[k].n,br:TOOLS[k].b,own:S.tools.includes(k),p:Math.round(TOOLS[k].p*MARKUP)})):J.parts.map(p=>({id:p.id,n:p.n,p:p.p}));
+ b.innerHTML=`<h2>${isT?'Pick your tools':'Pick your parts'}</h2>
+  <p>${isT?'Tap the tools you’ll need to put them on the bench, or press and hold one to drag it. Tap again to take one off. Tools you don’t own are bought at hardware store prices.':'Tap the parts you need to put them on the bench, or press and hold one to drag it. You pay for every part. Customers only pay for the parts the job needed.'}</p>
+  <div class="tray" id="tray" data-ph="Drop ${isT?'tools':'parts'} here"></div>
+  <div class="grid" id="pal">${items.map(it=>`<div class="item ${it.own?'own':''}" data-i="${it.id}">${esc(it.n)}${it.br?`<span class="br">${esc(it.br)}</span>`:''}<span class="pr">${isT?(it.own?'You own it':'$'+it.p):'$'+it.p}</span></div>`).join('')}</div>
+  <div id="dRes"></div><button class="btn wide" id="go">${isT?'TOOLS ARE READY':'PARTS ARE READY'}</button>${tipBar()}`;
+ const tray=$('tray');
+ function paint(){tray.innerHTML=[...sel].map(id=>`<span class="chip" data-x="${id}">${esc(isT?TOOLS[id].n:J.parts.find(p=>p.id===id).n)} ✕</span>`).join('');
+  b.querySelectorAll('.item').forEach(e=>e.classList.toggle('in',sel.has(e.dataset.i)));
+  tray.querySelectorAll('[data-x]').forEach(c=>c.onclick=()=>{sel.delete(c.dataset.x);paint()})}
+ function add(id){if(sel.has(id))return;
+  if(isT&&!S.tools.includes(id)){const pr=Math.round(TOOLS[id].p*MARKUP);
+   modal(`<h3>Buy a ${esc(TOOLS[id].n.toLowerCase())}?</h3><p>You don’t own one. The hardware store wants $${pr}.${S.truck?' The Fighter Tools truck sells it for $'+TOOLS[id].p+'.':''}</p><button class="btn" id="buyIt">BUY IT</button><button class="btn cream" data-close>NO</button>`);
+   $('buyIt').onclick=()=>{closeModal();spend(pr,TOOLS[id].n,()=>{S.tools.push(id);sel.add(id);sfx.clank();head();dragStage(kind)})};return}
+  sel.add(id);sfx.clank();paint()}
+ b.querySelectorAll('.item').forEach(el=>{
+  let g=null,sx=0,sy=0,moved=false,armed=false,timer=null,pid=null;
+  const startDrag=(x,y)=>{armed=true;g=el.cloneNode(true);g.classList.add('ghostdrag');g.style.width=el.offsetWidth+'px';g.style.left=x+'px';g.style.top=y+'px';document.body.appendChild(g);try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}};
+  const overTray=(x,y)=>{const r=tray.getBoundingClientRect();return x>r.left&&x<r.right&&y>r.top&&y<r.bottom};
+  const end=()=>{clearTimeout(timer);timer=null;if(g){g.remove();g=null}armed=false;tray.classList.remove('hot')};
+  el.addEventListener('touchmove',e=>{if(armed)e.preventDefault()},{passive:false});
+  el.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;moved=false;armed=false;pid=e.pointerId;
+   if(e.pointerType==='mouse'){el.setPointerCapture(e.pointerId)}
+   else timer=setTimeout(()=>{timer=null;if(!moved){try{el.setPointerCapture(pid)}catch(_){}startDrag(sx,sy)}},300)});
+  el.addEventListener('pointermove',e=>{const d=Math.hypot(e.clientX-sx,e.clientY-sy);
+   if(e.pointerType==='mouse'){if(!el.hasPointerCapture(e.pointerId))return;if(!armed&&d>8){moved=true;startDrag(e.clientX,e.clientY)}}
+   else if(!armed){if(d>8){moved=true;clearTimeout(timer);timer=null}return}
+   if(g){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';tray.classList.toggle('hot',overTray(e.clientX,e.clientY))}});
+  el.addEventListener('pointerup',e=>{const wasDrag=!!g,over=overTray(e.clientX,e.clientY),id=el.dataset.i,tap=!moved&&!wasDrag;end();
+   if(wasDrag){if(over)add(id)}else if(tap){sel.has(id)?(sel.delete(id),paint()):add(id)}});
+  el.addEventListener('pointercancel',end);
+ });
+ paint();bindTips();addGuide();
+ $('go').onclick=()=>{
+  if(isT){const miss=J.tools.filter(t=>!sel.has(t));
+   if(miss.length){sfx.bad();st.toolFails++;$('dRes').innerHTML=`<div class="card"><h3>You’re missing something</h3><p>You’ll need ${miss.length===1?'one more tool':miss.length+' more tools'} for this job. Think about every step: getting it apart, setting it up, and putting it back together.</p>${st.toolFails>=1?`<p><b>Dad looks over your shoulder:</b> “You’ll want ${miss.map(m=>esc(TOOLS[m].n.toLowerCase())).join(' and ')}.”</p>`:''}</div>`;return}
+   st.stage=4;renderJob();return}
+  const fresh=[...sel].filter(id=>!st.paid.has(id));const cost=fresh.reduce((a,id)=>a+J.parts.find(p=>p.id===id).p,0);
+  if(!J.need(sel)&&!(J.extraBad&&sel.has(J.extraBad.id))){sfx.bad();$('dRes').innerHTML=`<div class="card"><h3>That won’t fix it</h3><p>${esc(J.needMsg)}</p></div>`;return}
+  spend(cost,'These parts',()=>{fresh.forEach(id=>st.paid.add(id));st.partCost+=cost;st.stage=5;renderJob()});
+ };
+}
+const PHASES=['Take it apart','Do the fix','Put it back together'];
+function stepsStage(){
+ const b=$('jobBody');const SP=J.sp||[0,0,1,1,2,2];const done=st.seq.length>=J.steps.length;const ph=done?2:SP[st.seq.length];
+ if(!st.pools)st.pools={};
+ if(!st.pools[ph]){const bp=J.bp||[0,1];st.pools[ph]=[...J.steps.map((t,i)=>({t,i})).filter(x=>SP[x.i]===ph),...J.bad.map((x,k)=>({t:x.t,bad:k})).filter(x=>bp[x.bad]===ph&&!(st.usedBad||[]).includes(x.bad))].sort(()=>Math.random()-.5)}
+ const pool=st.pools[ph].filter(p=>!st.seq.includes(p));
+ b.innerHTML=`<h2>Do the repair</h2><p>The job comes in three stages. In each stage, tap the steps in the order you’d do them. If you pick one too early, it bounces back, and your first slip is free. Leave out anything a good mechanic wouldn’t do.</p>
+  <div class="card" id="seqBox">${PHASES.map((nm,k)=>`<h3 style="margin-top:${k?10:0}px;${k===ph&&!done?'':'opacity:.55'}">${k+1}. ${nm}${k<ph||done?' ✓':''}</h3>`+J.steps.map((_,i)=>i).filter(i=>SP[i]===k).map(i=>{const sq=st.seq[i];return `<div class="seq" style="margin:6px 0"><span class="n ${sq?'':'e'}">${i+1}</span><span>${sq?esc(sq.t):'<span class="small">…</span>'}</span></div>`}).join('')).join('')}</div>
+  ${done?'':`<h3>Stage ${ph+1}: ${PHASES[ph]}</h3>`+pool.map(p=>`<button class="opt" data-p="${st.pools[ph].indexOf(p)}">${esc(p.t)}</button>`).join('')}
+  <div id="dRes">${st.slipMsg||''}</div><button class="btn wide" id="go" ${done?'':'disabled'}>DO THE WORK</button>${tipBar()}`;
+ st.slipMsg='';
+ b.querySelectorAll('[data-p]').forEach(x=>x.onclick=()=>{const p=st.pools[ph][+x.dataset.p];
+  if(p.bad!==undefined){const bd=J.bad[p.bad];sfx.bad();
+   if(!bd.nostart){st.damage+=bd.cost;const short=Math.max(0,bd.cost-S.cash);S.cash-=bd.cost-short;S.loan+=short}
+   st.flawed=true;(st.usedBad=st.usedBad||[]).push(p.bad);save();head();
+   modal(`<h3>${bd.nostart?'That didn’t work':'You broke something'}</h3><p>${esc(bd.msg)}</p><button class="btn wide" data-close>LESSON LEARNED</button>`);
+   st.pools[ph]=st.pools[ph].filter(q=>q!==p);stepsStage();return}
+  if(p.i!==st.seq.length){sfx.bad();st.slips=(st.slips||0)+1;if(st.slips>1)st.flawed=true;
+   st.slipMsg=`<div class="card pop"><h3>Not yet</h3><p>Something in this stage has to happen first. ${st.slips===1?'That slip was free.':'That one costs you the Fast Start.'}</p></div>`;stepsStage();return}
+  st.seq.push(p);sfx.clank();stepsStage()});
+ bindTips();addGuide();
+ $('go').onclick=()=>{st.stage=6;renderJob()};
+}
+function crankStage(){
+ const b=$('jobBody');
+ const bad=J.extraBad&&st.parts.has(J.extraBad.id)&&!J.need(new Set([...st.parts].filter(x=>x!==J.extraBad.id)));
+ b.innerHTML=`<h2>Moment of truth</h2><div class="fig" id="mfig">${machineSVG(J.art)}</div><div id="dRes"></div><button class="btn wide red" id="go" style="font-size:28px">${esc(J.pull)}</button>`;
+ $('go').onclick=()=>{audioOn();sfx.pull();const f=$('mfig');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');$('go').disabled=true;
+  setTimeout(()=>{
+   if(bad){sfx.cough();$('dRes').innerHTML=`<div class="card"><h3>It won’t pick up fuel</h3><p>${esc(J.extraBad.msg)}</p><button class="btn wide" id="redo">BACK TO THE PARTS</button></div>`;$('go').remove();st.flawed=true;
+    $('redo').onclick=()=>{st.parts.delete(J.extraBad.id);st.seq=[];st.stage=4;renderJob()};return}
+   const fast=st.diagTries===1&&!st.flawed;
+   if(fast){sfx.fire();S.fs++;}else sfx.cough();
+   finishJob(fast);
+  },700)};
+}
+function finishJob(fast){
+ head();const b=$('jobBody');
+ const keep=new Set(st.parts),unneeded=[];for(const id of [...st.parts]){const p=J.parts.find(x=>x.id===id);if(p.ok)continue;const t=new Set([...keep].filter(x=>x!==id));if(J.need(t)){keep.delete(id);unneeded.push(id)}}
+ const unCost=unneeded.reduce((a,id)=>a+J.parts.find(p=>p.id===id).p,0);
+ const r0=rankOf(S.fs-(fast?1:0)),r1=rankOf(S.fs);
+ b.innerHTML=(fast?`<div class="center pop"><div class="fs">FAST START!</div><img src="label.jpg" alt="Fast Start 104" style="width:120px;margin:6px auto;border:3px solid #000;border-radius:6px;transform:rotate(-4deg)"><p>It fired on the first pull. That’s Fast Start number ${S.fs}.</p></div>`
+  :`<h2>It runs</h2><p>It took a few tries and a few lessons, but it’s running. No Fast Start this time, because ${st.diagTries>1&&st.flawed?'the wrong diagnosis and the mistakes on the bench cost you':st.diagTries>1?'the wrong diagnosis cost you':'the mistakes on the bench cost you'} the first-pull start.</p>`)
+  +(r1!==r0?`<div class="card dark pop"><h3>You moved up to ${esc(r1.n)}</h3><p>${bars(r1.bar)} The red bar moves one place along the label. Keep going.</p></div>`:'')
+  +(S.fs===FLEET&&fast?`<div class="card dark pop"><h3>Fast Start Fleet</h3><p>Six Fast Starts. The fleet operators in town are starting to hear your name.</p></div>`:'')
+  +`<div id="mor"></div>`;
+ const step2=()=>{const m=J.moral;$('mor').innerHTML=`<div class="card"><h3>Doing the right thing</h3><p style="font-size:17px">${esc(m.q)}</p>${m.a.map((a,i)=>`<button class="opt" data-m="${i}">${esc(a.t)}</button>`).join('')}</div>`;
+  $('mor').querySelectorAll('[data-m]').forEach(x=>x.onclick=()=>pay(m.a[+x.dataset.m]))};
+ if(unneeded.length){$('mor').innerHTML=`<div class="card"><h3>The invoice</h3><p>You put in parts this job didn’t need: ${unneeded.map(id=>esc(J.parts.find(p=>p.id===id).n.toLowerCase())).join(', ')} ($${unCost}). Do you bill ${esc(J.cust)} for them?</p>
+   <button class="opt" id="eat">No. My mistake, my cost.</button><button class="opt" id="bill">Yes. Put them on the bill.</button></div>`;
+  $('eat').onclick=()=>{S.rep+=1;save();step2()};$('bill').onclick=()=>{S.rep-=2;S.cash+=unCost;save();step2()}}
+ else step2();
+ function pay(choice){
+  const labour=J.pay+(S.upg.includes('sign')?5:0);const repBonus=Math.max(0,Math.round(S.rep*0.6));
+  const wasted=[...st.paid].filter(id=>!st.parts.has(id)).reduce((a,id)=>a+J.parts.find(p=>p.id===id).p,0);const neededCost=Math.max(0,st.partCost-unCost-wasted);
+  const iouIn=S.iou||0;S.iou=choice.iou||0;
+  let gross=labour+neededCost+choice.cash+repBonus+iouIn;S.rep+=choice.rep;
+  let loanPaid=Math.min(S.loan,gross);S.loan-=loanPaid;S.cash+=gross-loanPaid;
+  S.job++;S.done.push(J.id);if(S.job===1)S.truck=true;save();head();
+  $('mor').innerHTML=`<div class="card"><p>${esc(choice.msg)}</p><h3>Payday</h3>
+   <p>Labour: $${labour}<br>Parts paid back: $${neededCost}${repBonus?`<br>Repeat customers and good word of mouth: $${repBonus}`:''}${choice.cash>0?`<br>Extra cash on the side: $${choice.cash}`:''}${choice.cash<0?`<br>Left owing on this job: −$${-choice.cash}`:''}${iouIn?`<br>Linnea came back and paid what she owed: $${iouIn}`:''}${loanPaid?`<br>Paid back to Dad: −$${loanPaid}`:''}${st.damage?`<br><span class="small">Repairs to your own mistakes already cost you $${st.damage}.</span>`:''}</p>
+   <button class="btn wide" id="done">CLOSE OUT THE JOB</button></div>`;
+  $('done').onclick=()=>{const L=[{title:J.lesson.title,body:J.lesson.body,tag:'Learning from the job'}];
+   if(S.job===4&&S.town!=='Vernon'){S.town='Vernon';save();L.push(MOVE)}
+   if(S.job===1)L.push({title:'A truck pulls up',body:'A big Fighter Tools truck stops in front of your shed. The driver has a route through town every week. From now on you can buy tools from him for less than the hardware store charges.',tag:'Your shop'});
+   lessons(L,()=>{renderShop();show('sShop')})};
+ }
+}
+
+/* ---------- wiring ---------- */
+$('ageYes').onclick=()=>{audioOn();try{sessionStorage.setItem('fs104age','1')}catch(e){}title()};
+$('ageNo').onclick=()=>{$('ageMsg').textContent='Thanks for being honest. Come back when you’re 19.'};
+function title(){const s=store.get();$('newGame').style.display=s?'none':'';$('contGame').style.display=s?'':'none';show('sTitle')}
+$('startBtn').onclick=()=>{audioOn();const n=($('nameIn').value||'').trim().replace(/[^\p{L} '\-]/gu,'').slice(0,14)||'Danny';S=fresh(n);save();lessons(INTRO,()=>{renderShop();show('sShop')})};
+$('contBtn').onclick=()=>{S=store.get();if(!S.town)S.town='Falkland';if(S.iou===undefined)S.iou=0;if(S.job>=4&&S.town!=='Vernon'){S.town='Vernon';save();lessons([MOVE],()=>{renderShop();show('sShop')});return}renderShop();show('sShop')};
+$('resetBtn').onclick=()=>{modal(`<h3>Start over?</h3><p>Your shop, tools and Fast Starts will be gone.</p><button class="btn red" id="rs">START OVER</button><button class="btn cream" data-close>KEEP MY SHOP</button>`);$('rs').onclick=()=>{store.clear();closeModal();title()}};
+$('nextJobBtn').onclick=()=>{audioOn();startJob()};
+$('truckBtn').onclick=openTruck;$('fixBtn').onclick=openFix;$('ranksBtn').onclick=openRanks;$('roadBtn').onclick=openRoad;
+$('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+let age=null;try{age=sessionStorage.getItem('fs104age')}catch(e){}
+if(age)title();else show('sAge');
+}
+</script>
+</body>
+</html>
