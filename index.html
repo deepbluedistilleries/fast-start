@@ -193,7 +193,8 @@ const TOOLS={
  camtools:{n:'EcoBoost cam holding tools',b:'Fighter Tools',p:300},
  scholder:{n:'Supercharger pulley holding tool',b:'Fighter Tools',p:150},
  imstool:{n:'IMS bearing tool kit',b:'Fighter Tools',p:600},
- rotarycomp:{n:'Rotary compression tester',b:'Fighter Tools',p:350}
+ rotarycomp:{n:'Rotary compression tester',b:'Fighter Tools',p:350},
+ oilgauge:{n:'Mechanical oil pressure gauge',b:'Fighter Tools',p:80}
 };
 const MARKUP=1.35; // hardware store price vs the tool truck
 const UPG=[
@@ -218,7 +219,7 @@ const RANKS=[
  {n:'Fast Start Max Pro XL',s:'1.14 L',at:18,bar:4}
 ];
 const FLEET=6;
-const SEASON_AT=[0,4,7,11,16];
+const SEASON_AT=[0,4,7,11,17];
 function seasonOf(i){let n=1;SEASON_AT.forEach((a,k)=>{if(i>=a)n=k+1});return n}
 const MULT=[1,1,4,10,25];
 function mult(){return MULT[seasonOf(S.job)-1]}
@@ -854,6 +855,47 @@ const JOBS=[
       {t:'Take the cash.',rep:-4,cash:200,msg:'You pocket $200. Cash jobs have a way of turning up in an audit.'}]},
   lesson:{title:'Diesel in a BC winter',body:'Diesel contains paraffin wax. When it gets cold enough, wax crystals form, the fuel clouds, and then it gels and stops flowing through the filter. Fuel sellers switch to a winter blend as the weather turns, which stays liquid at much lower temperatures. The 12-valve Cummins in this truck has another famous weak spot: a dowel pin in the front of the block that can work its way out and fall into the timing gears. A small metal tab, held by a neighbouring bolt, stops it for good.'}
 },
+{ id:'gti', when:'November 2005', title:'2001 Volkswagen GTI 1.8T', art:'hatch', col:'#b8bcc4', pull:'TURN THE KEY',
+  cust:'Tyler Ross', rel:'a ski instructor at Silver Star', face:'#e6c29c', pay:550,
+  sp:[0,0,1,1,1,2,2], bp:[0,1],
+  story:'The oil light flickers when I’m stopped at a light after a drive. It goes off when I touch the gas. It’s done it for a month, and I just keep driving.',
+  checks:[
+   {id:'cap',t:'Look under the oil filler cap',r:'Thick black sludge, like tar, coats the inside of the cap and the cam cover.'},
+   {id:'records',t:'Look at the oil change records',r:'Oil changes every 15,000 kilometres, using cheap conventional oil from a quick-lube place.'},
+   {id:'switch',t:'Fit a new oil pressure switch and try again',r:'The light still flickers at hot idle. The switch was telling the truth.'},
+   {id:'gauge',t:'Hook up a mechanical oil pressure gauge',r:'Oil pressure drops very low at hot idle and comes back up with revs.',req:'oilgauge'},
+   {id:'pan',t:'Drop the oil pan and look at the pickup screen',r:'More than half of the pickup screen is caked with sludge.'}
+  ],
+  diag:[
+   {t:'Oil sludge blocking the oil pickup screen, starving the engine of oil pressure at hot idle',ok:1,why:'Sludge under the cap, years of long changes on the wrong oil, a gauge that confirms low pressure, and a pickup screen half covered. The oil pump can’t pull oil through the sludge.'},
+   {t:'A faulty oil pressure switch',ok:0,why:'You fitted a new switch and the light still comes on. The mechanical gauge confirms the pressure really is low.'},
+   {t:'A worn-out oil pump',ok:0,why:'The pump makes good pressure once the revs come up. It’s starving because the screen in front of it is blocked.'},
+   {t:'It’s only a light. Put tape over it.',ok:0,why:'Tape over a warning light is how engines die.'}
+  ],
+  dad:'It comes on hot at idle and goes off when you rev it. Don’t shoot the messenger. Find out why the pressure is low.',
+  gpa:'A small engine with a turbo, not much oil in it, cheap oil and long changes. That’s a recipe for sludge.',
+  tools:['sockets','torque','wrench','oilgauge'],
+  parts:[
+   {id:'pickup',n:'New oil pickup tube and screen',p:60},
+   {id:'gasket',n:'Oil pan and cam cover gaskets',p:45},
+   {id:'oil',n:'Synthetic oil to VW spec 502.00, and a filter',p:90},
+   {id:'pcv',n:'New crankcase breather hoses and valve',p:140,ok:1},
+   {id:'switch',n:'Oil pressure switch',p:20},
+   {id:'turbo',n:'New turbo',p:1200},
+   {id:'engine',n:'Replacement engine',p:4500}
+  ],
+  need:s=>s.has('pickup')&&s.has('gasket')&&s.has('oil'),
+  needMsg:'You need a new pickup tube and screen, new gaskets for the pan and cam cover, and the right synthetic oil.',
+  steps:['Drain the sludgy oil.','Drop the oil pan and remove the oil pickup tube.','Scrape and clean every bit of sludge out of the oil pan.','Pull the cam cover and clean the sludge out of the top of the engine.','Fit a new pickup tube and screen.','Refit the pan and cam cover with new gaskets and fill with the right synthetic oil.','Check the oil pressure hot at idle with the mechanical gauge.'],
+  bad:[
+   {t:'Pour in an engine flush and drive it hard to break the sludge loose.',cost:1200,msg:'The loosened sludge goes straight to the pickup screen and plugs it completely. The turbo starves of oil and fails, and you pay for a new one.'},
+   {t:'Put tape over the oil light.',cost:0,nostart:1,msg:'The light is gone. The low oil pressure isn’t.'}
+  ],
+  moral:{q:'Tyler asks you to write on the invoice that he followed the factory oil change schedule, so he can try for a warranty claim.',
+   a:[{t:'Refuse. Write down what you found, and show him how to keep this engine healthy from now on.',rep:3,cash:0,msg:'Tyler isn’t happy about it, but he starts changing his oil on time. The GTI is still running when he sells it years later.'},
+      {t:'Write it for a $200 tip.',rep:-6,cash:200,msg:'The warranty company asks for his receipts. Yours is the only one that says what he wanted it to say.'}]},
+  lesson:{title:'Sludge and the 1.8T',body:'Volkswagen and Audi’s 1.8 litre turbo four went into the GTI, Jetta, Passat and Audi A4. It holds a small amount of oil and runs its turbo hot. With long oil change intervals or the wrong oil it can build sludge that clogs the oil pickup screen, and the first warning is often an oil pressure light at hot idle. Volkswagen and Audi later settled a class action over sludge in Passats and A4s with this engine. The fix is to clean it out properly. The cure is the right synthetic oil, changed on time.'}
+},
 { id:'chevelle', when:'May 2007', title:'1970 Chevrolet Chevelle SS 396', art:'muscle', col:'#1d2f6e', pull:'TURN THE KEY',
   cust:'Darren Sidhu', rel:'whose cousin rebuilt the engine over the winter', face:'#a8774f', pay:900,
   sp:[0,0,0,1,1,1,2,2], bp:[1,2],
@@ -1248,6 +1290,7 @@ function carShape(k,c){
   coupe:`<path d="M40 150 L42 118 L115 110 L150 82 L245 82 L285 108 L358 116 L360 150Z" fill="${c}"/><rect x="330" y="100" width="34" height="6" fill="#222"/><path d="M156 88 L200 88 L200 108 L130 108Z M208 88 L240 88 L268 108 L208 108Z" fill="${glass}"/><circle cx="345" cy="128" r="6" fill="#e33"/><circle cx="330" cy="128" r="6" fill="#e33"/>${W(105,22)}${W(295,22)}`,
   micro:`<path d="M120 150 L120 100 Q130 70 180 66 L240 66 Q280 70 285 110 L285 150Z" fill="${c}"/><path d="M120 108 L285 108 L285 150 L120 150Z" fill="#b8bcc4"/><path d="M140 76 L235 74 L250 104 L132 104Z" fill="${glass}"/>${W(150,20)}${W(258,20)}`,
   saloon:`<path d="M38 150 L40 120 Q100 108 128 106 L165 80 L255 80 Q300 92 330 112 L362 120 L364 150Z" fill="${c}"/><path d="M170 86 L212 86 L212 106 L144 106Z M220 86 L252 86 L290 106 L220 106Z" fill="${glass}"/>${W(105,22)}${W(300,22)}`,
+  hatch:`<path d="M60 150 L62 118 L110 110 L150 84 L270 82 L300 112 L330 120 L332 150Z" fill="${c}"/><path d="M156 90 L210 90 L210 110 L130 110Z M218 90 L266 89 L288 110 L218 110Z" fill="${glass}"/><rect x="62" y="128" width="270" height="4" fill="#c8102e"/>${W(110,21)}${W(290,21)}`,
   roadster:`<path d="M50 150 Q52 122 100 116 L170 112 L196 96 L214 96 L222 112 Q320 112 350 130 L352 150Z" fill="${c}"/><path d="M198 100 L212 100 L218 112 L190 112Z" fill="${glass}"/><rect x="214" y="104" width="34" height="8" rx="4" fill="#222"/>${W(110,20)}${W(295,20)}`,
   rx7:`<path d="M34 150 Q38 126 90 118 Q140 104 175 88 Q240 78 290 96 Q345 112 362 136 L364 150Z" fill="${c}"/><path d="M182 92 Q235 84 282 104 L170 106Z" fill="${glass}"/><rect x="320" y="100" width="40" height="5" fill="#222"/>${W(105,21)}${W(300,21)}`,
   vette:`<path d="M30 150 Q32 128 80 122 Q140 112 180 92 L260 88 Q320 100 364 126 L366 150Z" fill="${c}"/><path d="M188 96 L254 93 L292 108 L172 110Z" fill="${glass}"/><rect x="30" y="134" width="60" height="4" fill="#111"/>${W(100,22)}${W(305,22)}`,
@@ -1542,7 +1585,7 @@ function finishJob(fast){
    if(S.job===4&&S.town!=='Vernon'){S.town='Vernon';save();L.push(MOVE)}
    if(S.job===7)L.push(SEASON3);
    if(S.job===11&&!S.ownShop){S.ownShop=true;S.town='Vernon';save();L.push(...OPENING)}
-   if(S.job===16)L.push(SEASON5);
+   if(S.job===17)L.push(SEASON5);
    if(S.job===JOBS.length)L.push(...FINALE);
    if(S.job===1)L.push({title:'A truck pulls up',body:'A big Fighter Tools truck stops in front of your shed. The driver has a route through town every week. From now on you can buy tools from him for less than the hardware store charges.',tag:'Your shop'});
    lessons(L,()=>{renderShop();show('sShop')})};
