@@ -223,7 +223,7 @@ const SEASON_AT=[0,4,7,11,17];
 function seasonOf(i){let n=1;SEASON_AT.forEach((a,k)=>{if(i>=a)n=k+1});return n}
 const MULT=[1,1,4,10,25];
 function mult(){return MULT[seasonOf(S.job)-1]}
-function shopRate(){return 1+0.05*S.upg.length}
+function shopRate(){return 1+0.05*S.upg.length+(S.insAdj||0)}
 function freeSlips(){return seasonOf(S.job)<=3?1:0}
 
 const JOBS=[
@@ -583,7 +583,7 @@ const JOBS=[
   lesson:{title:'Interference and non-interference engines',body:'In an interference engine the valves and pistons use the same space at different moments. If the timing belt snaps, the valves stop and the pistons hit them. The North American B230F in the Volvo 240 is generally a non-interference engine, so a broken belt usually leaves you stranded with nothing worse than a tow bill. People still argue about it, which is why a good mechanic proves it with a compression test.'}
 },
 { id:'c10', when:'July 1994', title:'1971 Chevrolet C10, bright green', art:'pickup', col:'#3fbf3f', pull:'TURN THE KEY',
-  cust:'Marty Wiens', rel:'who hauls fruit to the Coast every summer', face:'#c99a6e', pay:150,
+  cust:'Dave Trapp', rel:'who takes it over the Coquihalla every summer', face:'#c99a6e', pay:150,
   sp:[0,0,1,1,2,2], bp:[1,2],
   story:'On hot days it dies climbing the Coquihalla. I pull over, wait twenty minutes, and it fires right back up like nothing happened. On cool mornings it’s perfect.',
   checks:[
@@ -617,9 +617,9 @@ const JOBS=[
    {t:'Wrap the old line in duct tape to keep the heat off.',cost:0,nostart:1,msg:'The tape goes gooey and drips on the manifold. It still vapour locks.'},
    {t:'Tape a bag of ice to the fuel pump.',cost:0,nostart:1,msg:'It works until the ice melts, about ten minutes up the hill.'}
   ],
-  moral:{q:'Marty says a shop in Merritt charged him $600 last month for a new fuel pump that didn’t fix it. He asks if he got ripped off.',
-   a:[{t:'Tell him plainly that the pump wasn’t the problem, without running down the other shop.',rep:2,cash:0,msg:'Marty appreciates the straight answer. Mechanics who trash each other make the whole trade look bad.'},
-      {t:'Tell him the other shop are crooks.',rep:-1,cash:0,msg:'Marty repeats it around town. You don’t know what that shop saw, and now people wonder what you say about them.'}]},
+  moral:{q:'Dave says a shop in Merritt charged him $600 last month for a new fuel pump that didn’t fix it. He asks if he got ripped off.',
+   a:[{t:'Tell him plainly that the pump wasn’t the problem, without running down the other shop.',rep:2,cash:0,msg:'Dave appreciates the straight answer. Mechanics who trash each other make the whole trade look bad.'},
+      {t:'Tell him the other shop are crooks.',rep:-1,cash:0,msg:'Dave repeats it around town. You don’t know what that shop saw, and now people wonder what you say about them.'}]},
   lesson:{title:'Vapour lock',body:'Gasoline boils at a much lower temperature than water. When a fuel line runs too close to a hot exhaust, the fuel turns to vapour before it reaches the carburetor, and a mechanical fuel pump built to push liquid can’t push vapour. The engine starves and dies, then restarts once it cools. Older trucks suffer worst on hot days and long climbs.'}
 },
 { id:'buick', when:'September 1995', title:'1953 Buick Special, straight-eight', art:'oldsedan', col:'#2f4f3a', pull:'TURN THE KEY',
@@ -780,7 +780,7 @@ const JOBS=[
   lesson:{title:'Gears, chains and belts',body:'Engines drive their camshafts three ways. Older engines like the Volvo B20 use gears that mesh directly. Many V8s use a chain. Most newer overhead-cam engines use a rubber belt. Some B18 and B20 engines came with a fibre cam gear to keep them quiet. It works until the teeth strip, and then the engine simply stops. The 1800ES was the shooting-brake version of the P1800, built only in 1972 and 1973.'}
 },
 { id:'etype', when:'June 2002', title:'1967 Jaguar E-Type roadster, 4.2 litre', art:'sports', col:'#a8291e', pull:'TURN THE KEY',
-  cust:'Nigel Pembroke', rel:'a retired dentist from Coldstream', face:'#efd6bb', pay:900,
+  cust:'Robert Rons', rel:'who shows it every summer', face:'#efd6bb', pay:900,
   sp:[0,0,1,1,2,2], bp:[1,2],
   story:'There’s a rattle from the top of the engine at idle that wasn’t there last summer. It goes away when I rev it. I’m showing it in Kelowna next month and I want it perfect.',
   checks:[
@@ -810,11 +810,11 @@ const JOBS=[
   steps:['Remove the breather cover from the front of the cylinder head.','Stuff clean rags around the opening so nothing can fall into the engine.','Loosen the locknut slightly and press in the locking plunger on the adjuster.','Turn the serrated adjuster plate with the special tool until the chain has just a little give between the sprockets.','Let the plunger snap back into place and tighten the locknut.','Turn the engine two full turns by hand, recheck the chain, and refit the cover with a new gasket.'],
   bad:[
    {t:'Crank the chain as tight as it will go so it can never rattle again.',cost:400,msg:'An overtight chain whines and wears the sprockets. You pay $400 for a new chain and sprockets.'},
-   {t:'Turn up the radio so Nigel can’t hear the rattle.',cost:0,nostart:1,msg:'Nigel can still hear it. So can the judges.'}
+   {t:'Turn up the radio so Robert can’t hear the rattle.',cost:0,nostart:1,msg:'Robert can still hear it. So can the judges.'}
   ],
-  moral:{q:'Nigel asks you to sign a letter saying the car is “numbers matching” for the show. You noticed the engine number doesn’t match the car’s papers.',
-   a:[{t:'Refuse, and show him the mismatch.',rep:3,cash:0,msg:'He’s disappointed, but he shows it honestly and still wins his class.'},
-      {t:'Sign it for $200.',rep:-6,cash:200,msg:'A judge checks the number. Your letter is in the judge’s hand, with your name on it.'}]},
+  moral:{q:'Robert would never know the difference. You could tell him it needs a full timing chain job with the engine out, for $1,800, instead of a twenty-minute adjustment.',
+   a:[{t:'Tell him the truth: it only needs adjusting.',rep:3,cash:0,msg:'Robert can’t believe how little it cost. He tells every car club in the Okanagan about you.'},
+      {t:'Sell him the full chain job.',rep:-6,cash:1500,msg:'You make $1,500 for work the car didn’t need. At the show, another XK owner tells Robert how to adjust a top chain in twenty minutes.'}]},
   lesson:{title:'The XK engine',body:'Jaguar’s XK six first appeared in 1948 and stayed in production in one form or another for more than forty years. Its twin overhead camshafts sit a long way from the crankshaft, so Jaguar used two timing chains, with an adjuster for the upper chain that a mechanic can reach through the breather cover on the front of the head. The chain should never be dead tight. It needs a little slack.'}
 },
 { id:'cummins', when:'January 2005', title:'1997 Dodge Ram 2500, 5.9 Cummins 12-valve', art:'pickup', col:'#7d1f17', pull:'TURN THE KEY',
@@ -1059,7 +1059,7 @@ const JOBS=[
   lesson:{title:'The rotary engine',body:'Mazda’s rotary engine has no pistons. Triangular rotors spin inside oval housings, and each rotor tip carries an apex seal that seals the chambers on either side of it. When one apex seal fails, a rotary compression test shows a pattern of one high pulse followed by two low ones. Low compression often shows up first as a hard hot start, because a hot engine seals less well than a cold one.'}
 },
 { id:'smart', when:'March 2012', title:'2009 Smart fortwo', art:'micro', col:'#3a3a3a', pull:'TURN THE KEY',
-  cust:'Tamsin Hale', rel:'who uses it for her mobile dog-grooming business', face:'#e8c4a0', pay:800,
+  cust:'Kyla', rel:'a lawyer who zips between courthouses in it', face:'#e8c4a0', pay:800,
   sp:[0,0,0,1,1,1,2,2], bp:[0,2],
   story:'It shakes at idle, the engine light flashes, and it’s burning oil. I’m topping it up every week. It has 140,000 kilometres on it.',
   checks:[
@@ -1091,7 +1091,7 @@ const JOBS=[
    {t:'Just replace the coil pack. That’s what the internet said.',cost:120,msg:'You spent $120, and it still misses on cylinder 2.'},
    {t:'Fill it with the thickest oil you can find so it burns less.',cost:0,nostart:1,msg:'It still misses. Thick oil doesn’t fix a burned valve.'}
   ],
-  moral:{q:'Tamsin is short on money. The wrecker has a used engine for less than your rebuild, with unknown kilometres.',
+  moral:{q:'Kyla asks whether a used engine from the wrecker would be cheaper than your rebuild. It would be, but nobody knows how many kilometres it has.',
    a:[{t:'Lay out both options honestly, with the risks of each.',rep:3,cash:0,msg:'She picks the rebuild because you explained it straight. She sends you three customers.'},
       {t:'Tell her the used engine is junk so you keep the job.',rep:-3,cash:0,msg:'She finds out the wrecker’s engine was fine. She also finds another mechanic.'}]},
   lesson:{title:'Fix the cause, not only the damage',body:'The Smart fortwo of this era uses a one-litre three-cylinder engine. A known weak spot is the oil control rings, which can gum up and leave oil in the top of the cylinder, where it cooks the valves and leads to a misfire from low compression. The engine is small and comparatively cheap to rebuild. A good mechanic fixes the burned valve and the rings that caused it.'}
@@ -1136,7 +1136,7 @@ const JOBS=[
   lesson:{title:'Measure, don’t guess',body:'The LS7 V8 in the 2006 to 2013 Corvette Z06 became famous among owners for exhaust valve guide wear that, in some cases, let a valve drop into a cylinder. GM published a bulletin saying incidents were very low and engines without symptoms shouldn’t be torn down. Owners and shops answered with the wiggle test, which measures valve stem movement with a dial indicator. Either way, the lesson for a mechanic is the same: measure it.'}
 },
 { id:'tremor', when:'October 2015', title:'2014 Ford F-150 Tremor, 3.5 EcoBoost', art:'pickup', col:'#1a1a1a', pull:'TURN THE KEY',
-  cust:'Brandon Kerr', rel:'a framer who tows his work trailer every day', face:'#c89c74', pay:1500,
+  cust:'Kevin Black', rel:'who tows his trailer most weekends', face:'#c89c74', pay:1500,
   sp:[0,0,0,1,1,1,2,2], bp:[0,2],
   story:'On cold mornings it rattles for a couple of seconds when it first starts, then goes quiet. It’s getting longer every week. I tow a lot and I’ve been stretching my oil changes.',
   checks:[
@@ -1169,7 +1169,7 @@ const JOBS=[
    {t:'Skip the cam holding tools. You can hold the cams with your hands.',cost:2000,msg:'A cam snaps around under valve spring pressure and the timing is lost. You spend $2,000 of your own time and parts sorting it out.'},
    {t:'Tell him to use thicker oil to quiet it down.',cost:0,nostart:1,msg:'It still rattles every cold morning, and the chains keep stretching.'}
   ],
-  moral:{q:'Brandon asks if he really needs to change his oil more often. A busier shop would just do the job and keep quiet so he comes back.',
+  moral:{q:'Kevin asks if he really needs to change his oil more often. A busier shop would just do the job and keep quiet so he comes back.',
    a:[{t:'Tell him straight: change it sooner when you tow, or you’ll be back.',rep:3,cash:0,msg:'He listens. His truck outlives his next two trailers.'},
       {t:'Tell him his oil changes are fine.',rep:-2,cash:0,msg:'He’s back in three years with the same rattle, and this time he knows you could have warned him.'}]},
   lesson:{title:'Turbos, chains and clean oil',body:'Ford’s 3.5 litre EcoBoost V6 uses twin turbochargers to make big-engine power from a smaller engine. Its cams are driven by chains, and the cam phasers that adjust valve timing rely on clean oil at the right pressure. Long oil changes, especially while towing, wear the chains and phasers faster. A rattle for a few seconds on a cold start is the classic early warning.'}
@@ -1367,7 +1367,7 @@ function renderShop(){
 function openTruck(){
  const list=Object.entries(TOOLS).filter(([k,v])=>!v.start).map(([k,v])=>{const own=S.tools.includes(k);
   return `<button class="opt ${own?'done':''}" data-t="${k}" ${own?'disabled':''}>${esc(v.n)}<span class="res">${own?'On your pegboard':'$'+v.p+' from the truck'}</span></button>`}).join('');
- modal(`<img src="fighter.png" alt="Fighter" style="width:70%;margin:0 auto"><h3 class="center" style="color:var(--navy)">TOOLS</h3><p class="small center">Built to fight. Lifetime warranty if you don’t abuse them.</p>${list}<button class="btn wide" data-close>DONE</button>`);
+ modal(`<img src="fighter.png" alt="Fighter" style="width:70%;margin:0 auto"><h3 class="center" style="color:var(--navy)">TOOLS</h3><p class="small center">The best tools in British Columbia. Built to fight, and backed for life.</p>${list}<button class="btn wide" data-close>DONE</button>`);
  document.querySelectorAll('#modalCard [data-t]').forEach(b=>b.onclick=()=>{const k=b.dataset.t;spend(TOOLS[k].p,TOOLS[k].n,()=>{S.tools.push(k);save();sfx.clank();renderShop();openTruck()})});
 }
 function openFix(){
@@ -1390,12 +1390,13 @@ function openRoad(){
 /* ---------- lessons ---------- */
 const INTRO=[
  {title:'Falkland, June 1984',body:'You rent a leaky shed behind the gas station in Falkland, on Highway 97 between Vernon and Kamloops, for $40 a month. The Stampede crowds went home a few weeks ago, the way they have every spring since 1919. You own a screwdriver set, a garage-sale box of wrenches, a spark plug wrench from Dad’s old car and a rusty hammer. You have $60 of birthday money. It’s a start.'},
+ {title:'Fighter Tools',body:'Every serious mechanic in British Columbia knows the Fighter Tools truck. Fighter is a BC brand, and its tools are the best a mechanic can own: built to fight, and backed for life. Right now you can’t afford a single one. You will.'},
  {title:'Before Fast Start 104, there was the Fast Start',body:'Long before this, George Hartley converted his 1924 Dodge to run on ultra-pure ethanol that he made himself, and he drove it around Jasper. He called it the Fast Start. He was a tinkerer who could make anything run. Fast Start 104 from Deep Blue Distilleries is named for him. In this game, every engine you get running on the first try is a Fast Start.'}
 ];
 const MOVE={title:'Spring 1985: moving to Vernon',tag:'Your shop',body:'Falkland gave you your start, but the work is in Vernon, about 42 kilometres down Highway 97. You load your tools into Dad’s truck and rent a real bay with a roll-up door on the edge of town. Your Falkland customers still drive down to see you. From now on the jobs get bigger: cars and trucks.'};
 const SEASON3={title:'1988: the cars keep coming',tag:'Your shop',body:'Word has spread. The small engines still come in, but most of your work now is cars and trucks from all over the North Okanagan. The jobs are bigger, the parts cost more, and so does advice. Dad and Grandpa still help, but their time costs more now too.'};
 const OPENING=[
- {title:'Spring 1996: your own shop',tag:'Grand opening',body:'After twelve years of renting, you buy a lot on the edge of Vernon and build a shop of your own, with your name over the door. It has a real office, a parts room and space for a second bay.'},
+ {title:'Spring 1996: your own shop',tag:'Grand opening',body:'After twelve years of renting, you buy a lot on the edge of Vernon and build a shop of your own, with your name over the door. It has a real office, a parts room and space for a second bay. Before the guests arrive, you spend $20 on subs from Mr. Sub, and you, Dad and Grandpa eat lunch on the tailgate, looking at the new building.'},
  {title:'Grand opening night',tag:'Grand opening',body:'Half the valley shows up: Mrs. Kowalchuk, Ray, the Sandhus, Linnea, Gord and Kyle, and customers you haven’t seen in years. You hire a bartender to serve Fast Start 104 mixed drinks to guests 19 and over. The shop floor stays closed, every customer car is locked away for the night, and everyone who has a drink gets a ride home. Dad gives a short speech. Grandpa says the place looks a lot better than the shed.'},
  {title:'Harder jobs from here',tag:'Your shop',body:'From now on there are no free slips on the repair steps, and the wrong answers on the diagnosis will look a lot more like the right one. Real mechanics don’t get second chances on a customer’s car.'}
 ];
@@ -1483,7 +1484,7 @@ function dragStage(kind){
  const items=isT?pal.map(k=>({id:k,n:TOOLS[k].n,br:TOOLS[k].b,own:S.tools.includes(k),p:Math.round(TOOLS[k].p*MARKUP)})):J.parts.map(p=>({id:p.id,n:p.n,p:p.p}));
  b.innerHTML=`<h2>${isT?'Pick your tools':'Pick your parts'}</h2>
   <p>${isT?'Tap the tools you’ll need to put them on the bench, or press and hold one to drag it. Tap again to take one off. Tools you don’t own are bought at hardware store prices.':'Tap the parts you need to put them on the bench, or press and hold one to drag it. You pay for every part. Customers only pay for the parts the job needed.'}</p>
-  <div class="tray" id="tray" data-ph="Drop ${isT?'tools':'parts'} here"></div>
+  ${!isT&&seasonOf(S.job)>=3&&S.job%2===1?'<p class="small"><b>Good price at Lordco</b> on these parts this week.</p>':''}<div class="tray" id="tray" data-ph="Drop ${isT?'tools':'parts'} here"></div>
   <div class="grid" id="pal">${items.map(it=>`<div class="item ${it.own?'own':''}" data-i="${it.id}">${esc(it.n)}${it.br?`<span class="br">${esc(it.br)}</span>`:''}<span class="pr">${isT?(it.own?'You own it':'$'+it.p):'$'+it.p}</span></div>`).join('')}</div>
   <div id="dRes"></div><button class="btn wide" id="go">${isT?'TOOLS ARE READY':'PARTS ARE READY'}</button>${tipBar()}`;
  const tray=$('tray');
@@ -1558,6 +1559,12 @@ function crankStage(){
    finishJob(fast);
   },700)};
 }
+function ticketEvent(){
+ modal(`<h3>Pulled over on the test drive</h3><p>You take the Corvette out on Highway 97 to make sure the valvetrain stays quiet at speed. A few minutes later you see lights behind you. It’s IRSU Corporal Gottgetreu, who for years caught more excessive speeders than anyone else in BC. He hands you a speeding ticket.</p>
+  <button class="opt" id="tkLaw">Call Acumen Law and dispute it.</button><button class="opt" id="tkPay">Pay the ticket and get back to work.</button>`);
+ $('tkLaw').onclick=()=>{S.ticket='won';S.insAdj=0.03;save();renderShop();modal(`<h3>Ticket dismissed</h3><p>Kyla Lee takes your case. At the hearing she raises a doubt about how accurately the corporal could estimate your speed, and the ticket is dismissed. With a clean driving record, your insurance stays low, and your shop’s income goes up a little.</p><button class="btn wide" data-close>BACK TO THE SHOP</button>`)};
+ $('tkPay').onclick=()=>{S.ticket='paid';S.insAdj=-0.05;S.cash=Math.max(0,S.cash-150);save();renderShop();modal(`<h3>Ticket paid</h3><p>You pay the $150 and move on. Income hit when insurance premiums rise.</p><button class="btn wide" data-close>BACK TO THE SHOP</button>`)};
+}
 function finishJob(fast){
  head();const b=$('jobBody');
  const keep=new Set(st.parts),unneeded=[];for(const id of [...st.parts]){const p=J.parts.find(x=>x.id===id);if(p.ok)continue;const t=new Set([...keep].filter(x=>x!==id));if(J.need(t)){keep.delete(id);unneeded.push(id)}}
@@ -1588,11 +1595,11 @@ function finishJob(fast){
   $('done').onclick=()=>{const L=[{title:J.lesson.title,body:J.lesson.body,tag:'Learning from the job'}];
    if(S.job===4&&S.town!=='Vernon'){S.town='Vernon';save();L.push(MOVE)}
    if(S.job===7)L.push(SEASON3);
-   if(S.job===11&&!S.ownShop){S.ownShop=true;S.town='Vernon';save();L.push(...OPENING)}
+   if(S.job===11&&!S.ownShop){S.ownShop=true;S.town='Vernon';S.cash=Math.max(0,S.cash-20);save();L.push(...OPENING)}
    if(S.job===17)L.push(SEASON5);
    if(S.job===JOBS.length)L.push(...FINALE);
    if(S.job===1)L.push({title:'A truck pulls up',body:'A big Fighter Tools truck stops in front of your shed. The driver has a route through town every week. From now on you can buy tools from him for less than the hardware store charges.',tag:'Your shop'});
-   lessons(L,()=>{renderShop();show('sShop')})};
+   lessons(L,()=>{renderShop();show('sShop');if(J.id==='vette'&&!S.ticket)ticketEvent()})};
  }
 }
 
