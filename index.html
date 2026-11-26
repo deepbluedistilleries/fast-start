@@ -104,7 +104,7 @@ a{color:var(--yel)}
   <div class="card" style="text-align:left">
     <h3>How a job works</h3>
     <p>A machine comes in that won't start. You inspect it, decide what's wrong, drag the right tools and parts to the bench, and put the repair steps in order. Then you pull the cord. If it fires on the first try, that's a <b>Fast Start</b>.</p>
-    <p>Stuck? Dad will give you a nudge for $5. Grandpa knows these old engines cold, and his advice costs $10. Break something and the repair comes out of your pocket. Do honest work and the customers come back.</p>
+    <p>Stuck? Dad will give you a nudge for $5. Grandpa knows these old engines cold, and his advice costs $10. Get three Fast Starts in a row and you win a Fast Start Scholarship, which gives you a free expert tip. Break something and the repair comes out of your pocket. Do honest work and the customers come back.</p>
   </div>
 </div>
 
@@ -1424,9 +1424,10 @@ function head(){
  $('stepBar').innerHTML=STAGES.map((s,i)=>`<span class="${i<=st.stage?'d':''}" title="${s}"></span>`).join('');
 }
 function tipCost(){return seasonOf(S.job)<=2?1:4}
-function tipBar(){const m=tipCost();return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $${5*m}</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $${10*m}</button></div>`}
+function tipBar(){const m=tipCost();return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $${5*m}</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $${10*m}</button>${(S.scholar||0)>0?`<button class="btn" id="tipSch" style="font-size:18px">SCHOLARSHIP TIP · FREE</button>`:''}</div>`}
 function bindTips(){
  const t=(who,cost,txt)=>spend(cost,'Advice from '+who,()=>{st.tips++;head();modal(`<div class="who"><div class="face" style="background:${who==='Dad'?'#c7976b':'#e0c8a8'}"></div><h3>${who} says</h3></div><p style="font-size:17px">“${esc(txt)}”</p><button class="btn wide" data-close>THANKS</button>`)});
+ const sc=$('tipSch');if(sc)sc.onclick=()=>{S.scholar--;save();st.tips++;head();modal(`<img src="label.jpg" alt="Fast Start 104" style="width:90px;margin:0 auto 8px;border:2px solid #000;border-radius:4px"><h3 class="center">From your Fast Start Scholarship course</h3><p style="font-size:17px">${esc(J.dad)}</p><p style="font-size:17px">${esc(J.gpa)}</p><p class="small">This tip was free.${S.scholar>0?' You have '+S.scholar+' more scholarship tip'+(S.scholar===1?'':'s')+' saved.':''}</p><button class="btn wide" data-close>BACK TO WORK</button>`);const b=$('tipSch');if(b&&!S.scholar)b.remove()};
  const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5*tipCost(),J.dad);if(g)g.onclick=()=>t('Grandpa',10*tipCost(),J.gpa);
 }
 const GUIDE=[
@@ -1553,7 +1554,7 @@ function crankStage(){
    if(bad){sfx.cough();$('dRes').innerHTML=`<div class="card"><h3>It won’t pick up fuel</h3><p>${esc(J.extraBad.msg)}</p><button class="btn wide" id="redo">BACK TO THE PARTS</button></div>`;$('go').remove();st.flawed=true;
     $('redo').onclick=()=>{st.parts.delete(J.extraBad.id);st.seq=[];st.stage=4;renderJob()};return}
    const fast=st.diagTries===1&&!st.flawed;
-   if(fast){sfx.fire();S.fs++;}else sfx.cough();
+   if(fast){sfx.fire();S.fs++;S.streak=(S.streak||0)+1;if(S.streak>=3){S.streak=0;S.scholar=(S.scholar||0)+1;st.wonScholar=true}}else{sfx.cough();S.streak=0}
    finishJob(fast);
   },700)};
 }
@@ -1565,6 +1566,7 @@ function finishJob(fast){
  b.innerHTML=(fast?`<div class="center pop"><div class="fs">FAST START!</div><img src="label.jpg" alt="Fast Start 104" style="width:120px;margin:6px auto;border:3px solid #000;border-radius:6px;transform:rotate(-4deg)"><p>It fired on the first pull. That’s Fast Start number ${S.fs}.</p></div>`
   :`<h2>It runs</h2><p>It took a few tries and a few lessons, but it’s running. No Fast Start this time, because ${st.diagTries>1&&st.flawed?'the wrong diagnosis and the mistakes on the bench cost you':st.diagTries>1?'the wrong diagnosis cost you':'the mistakes on the bench cost you'} the first-pull start.</p>`)
   +(r1!==r0?`<div class="card dark pop"><h3>You moved up to ${esc(r1.n)}</h3><p>${bars(r1.bar)} The red bar moves one place along the label. Keep going.</p></div>`:'')
+  +(st.wonScholar?`<div class="card dark pop"><h3>Fast Start Scholarship</h3><p>Three Fast Starts in a row. You win a scholarship to a weekend training course with some of the best mechanics in the province. On your next job, tap <b>Scholarship Tip</b> for expert advice, free.</p></div>`:fast&&S.streak?`<p class="small center">Fast Start streak: ${S.streak} in a row. ${3-S.streak} more ${3-S.streak===1?'earns':'earn'} a Fast Start Scholarship.</p>`:!fast?`<p class="small center">Your Fast Start streak is back to zero. Three in a row earns a Fast Start Scholarship.</p>`:'')
   +(S.fs===FLEET&&fast?`<div class="card dark pop"><h3>Fast Start Fleet</h3><p>Six Fast Starts. The fleet operators in town are starting to hear your name.</p></div>`:'')
   +`<div id="mor"></div>`;
  const step2=()=>{const m=J.moral;$('mor').innerHTML=`<div class="card"><h3>Doing the right thing</h3><p style="font-size:17px">${esc(m.q)}</p>${m.a.map((a,i)=>`<button class="opt" data-m="${i}">${esc(a.t)}</button>`).join('')}</div>`;
