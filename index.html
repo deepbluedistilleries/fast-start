@@ -38,6 +38,7 @@ img{max-width:100%;display:block}
 .stat{position:sticky;top:0;z-index:5;background:var(--navy);border-bottom:2px solid var(--yel);display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;margin:-14px 0 8px}
 .stat b{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-size:22px;color:var(--yel)}
 .stat .lab{font-size:11px;text-transform:uppercase;opacity:.75;display:block;line-height:1}
+.tal{display:inline-flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:150px}.tal .set{display:inline-flex;gap:1px;padding:1px;border:1px solid transparent}.tal .set i{width:5px;height:16px;background:#2a4a7a;border:1px solid #000}.tal .set i.on,.tal .set.full i{background:var(--red)}.tal .set.full{border-color:var(--yel);border-radius:2px}
 .bars{display:flex;gap:2px}.bars i{width:7px;height:20px;background:#2a5ea8;border:1px solid #000}.bars i.r{background:var(--red)}
 .steps{display:flex;gap:3px;margin:6px 0 10px}.steps span{flex:1;height:6px;border-radius:3px;background:#2b4670}.steps span.d{background:var(--yel)}
 .opt{display:block;width:100%;text-align:left;background:#fff;color:var(--ink);border:2px solid #000;border-radius:10px;padding:11px 12px;margin:7px 0;font:600 16px Barlow,sans-serif;cursor:pointer;min-height:48px}
@@ -176,7 +177,22 @@ const TOOLS={
  sockets:{n:'3/8" socket set',b:'Fighter Tools',p:40},
  air:{n:'Air compressor and blow gun',b:'Fighter Tools',p:35},
  torque:{n:'Torque wrench',b:'Fighter Tools',p:45},
- straight:{n:'Machinist straightedge',b:'Fighter Tools',p:18}
+ straight:{n:'Machinist straightedge',b:'Fighter Tools',p:18},
+ balpuller:{n:'Harmonic balancer puller',b:'Fighter Tools',p:30},
+ bender:{n:'Tubing bender and flaring tool',b:'Fighter Tools',p:35},
+ brasshammer:{n:'Brass hammer',b:'Fighter Tools',p:22},
+ leakdown:{n:'Leak-down tester',b:'Fighter Tools',p:90},
+ springcomp:{n:'Valve spring compressor',b:'Fighter Tools',p:55},
+ gearpuller:{n:'Gear puller',b:'Fighter Tools',p:40},
+ stetho:{n:'Mechanic’s stethoscope',b:'Fighter Tools',p:25},
+ xktool:{n:'XK timing chain adjuster tool',b:'Fighter Tools',p:45},
+ filterwrench:{n:'Fuel filter wrench',b:'Fighter Tools',p:20},
+ dial:{n:'Dial indicator and magnetic base',b:'Fighter Tools',p:120},
+ borescope:{n:'Inspection camera',b:'Fighter Tools',p:250},
+ enginejack:{n:'Engine support and transmission jack',b:'Fighter Tools',p:900},
+ camtools:{n:'EcoBoost cam holding tools',b:'Fighter Tools',p:300},
+ scholder:{n:'Supercharger pulley holding tool',b:'Fighter Tools',p:150},
+ imstool:{n:'IMS bearing tool kit',b:'Fighter Tools',p:600}
 };
 const MARKUP=1.35; // hardware store price vs the tool truck
 const UPG=[
@@ -186,16 +202,26 @@ const UPG=[
  {id:'paint',n:'Paint the walls',p:26,rep:1,d:'Navy and cream. It finally looks like a business.'},
  {id:'sign',n:'Sign out front',p:35,rep:2,d:'People driving by know you exist. Every job pays $5 more.'},
  {id:'hoist',n:'Used two-post hoist',p:150,rep:2,d:'Cars go up, you stand underneath. Only fits in a real bay, so it unlocks in Vernon.',town:'Vernon'},
- {id:'counter',n:'Hire someone for the front counter',p:120,rep:2,d:'Someone answers the phone while you work. Unlocks when you reach Fast Start Max Pro.',lock:8}
+ {id:'counter',n:'Hire someone for the front counter',p:120,rep:2,d:'Someone answers the phone while you work. Unlocks when you reach Fast Start Max Pro.',lock:8},
+ {id:'bay2',n:'Second service bay with a hoist',p:3000,rep:2,d:'Two cars at once. Available once you own your shop.',own:1},
+ {id:'apprentice',n:'Take on an apprentice',p:1500,rep:3,d:'A young person who needs a trade. You teach them the way Dad and Grandpa taught you.',own:1},
+ {id:'house',n:'Buy a house',p:8000,rep:1,d:'A place of your own, a short drive from the shop.',own:1},
+ {id:'volvo',n:'Buy a 1989 Volvo 240 DL for your collection',p:2500,rep:0,d:'Your first classic. Boxy, honest and nearly impossible to kill.',own:1},
+ {id:'c10',n:'Buy a bright green 1971 Chevy C10 for your collection',p:6000,rep:0,d:'You fixed one in 1994. Now you own one.',own:1}
 ];
 const RANKS=[
  {n:'Fast Start mini',s:'50 mL',at:0,bar:0},
  {n:'Fast Start Max',s:'200 mL',at:4,bar:1},
  {n:'Fast Start Max Pro',s:'375 mL',at:8,bar:2},
- {n:'Fast Start Max Pro HD',s:'750 mL',at:14,bar:3},
- {n:'Fast Start Max Pro XL',s:'1.14 L',at:20,bar:4}
+ {n:'Fast Start Max Pro HD',s:'750 mL',at:13,bar:3},
+ {n:'Fast Start Max Pro XL',s:'1.14 L',at:18,bar:4}
 ];
 const FLEET=6;
+const SEASON_AT=[0,4,7,11,15];
+function seasonOf(i){let n=1;SEASON_AT.forEach((a,k)=>{if(i>=a)n=k+1});return n}
+const MULT=[1,1,4,10,25];
+function mult(){return MULT[seasonOf(S.job)-1]}
+function freeSlips(){return seasonOf(S.job)<=3?1:0}
 
 const JOBS=[
 { id:'mower', sp:[0,0,0,1,2,2], bp:[0,0], when:'June 1984', title:'1978 Briggs & Stratton push mower', art:'mower', pull:'PULL THE CORD',
@@ -473,25 +499,569 @@ const JOBS=[
    a:[{t:'Tell him you won’t help hide it. Offer to fix it properly instead.',rep:3,cash:0,msg:'Wes grumbles, then lets you do the job right. A year later he’s still driving it and telling people about you.'},
       {t:'Do it. It’s his truck and his sale.',rep:-4,cash:15,msg:'You take $15. Two weeks later the kid is broken down on Highway 6 with a truck he can’t afford to fix.'}]},
   lesson:{title:'The last of the double chains',body:'From 1975 to 1982, Toyota’s 20R and 22R engines used a double-row timing chain with steel guides, and it was very reliable. In 1983 Toyota switched to a single-row chain with plastic guides, which stretches and breaks its guides far more often. Wes’s 1982 is the last of the tough ones. Its weak spot was heat, and the lesson is old as engines: when the needle hits the red, pull over and shut it off.'}
+},
+{ id:'cutlass', when:'March 1988', title:'1986 Oldsmobile Cutlass Supreme', art:'sedan', col:'#7a1f2b', pull:'TURN THE KEY',
+  cust:'Doreen Pelletier', rel:'who drives it to her shifts at the hospital', face:'#d9b08c', pay:140,
+  sp:[0,0,0,1,1,2,2], bp:[0,1],
+  story:'It’s been rattling at the front of the engine every morning for a month. This morning it backfired through the carburetor, died at the lights on 32nd Street, and now it cranks but won’t start.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'Spark on all eight plug wires.',tool:'tester',rt:'The tester flashes on all eight wires. Ignition is fine.'},
+   {id:'comp',t:'Run a compression test',r:'All eight cylinders read about 90 psi. They’re low, but they’re all low by the same amount.',req:'compg'},
+   {id:'rotor',t:'Pull the distributor cap and rock the crank back and forth with a wrench',r:'The crankshaft turns a long way before the rotor moves at all. There’s a lot of slack between the crank and the cam.'},
+   {id:'pan',t:'Drain a little oil into a clean pan',r:'Small chips of white nylon come out with the oil.'},
+   {id:'fuel',t:'Work the throttle and look into the carburetor',r:'Fuel squirts in. Fuel isn’t the problem.'}
+  ],
+  diag:[
+   {t:'A stretched timing chain and a stripped nylon cam gear, so the cam has slipped out of time',ok:1,why:'Every cylinder is low by the same amount, the crank turns before the rotor does, and there’s nylon in the oil. The cam gear has lost teeth and the chain has jumped.'},
+   {t:'Eight bad cylinders all at once',ok:0,why:'Eight cylinders don’t wear out on the same morning. When they’re all low by the same amount, look for the one part they all share.'},
+   {t:'It needs a bigger carburetor',ok:0,why:'A bigger carburetor won’t help an engine whose valves open at the wrong time.'},
+   {t:'The rattle scared the engine into quitting',ok:0,why:'Engines don’t get scared. The rattle was the chain telling you it was loose.'}
+  ],
+  dad:'Every cylinder is low by the same amount. That doesn’t sound like eight problems. That sounds like one thing they all share.',
+  gpa:'GM put a nylon-toothed cam gear on those Olds V8s to keep them quiet. The teeth go brittle and break off. Put in an all-metal set, and fish the nylon out of the oil pan.',
+  tools:['sockets','wrench','screw','torque','balpuller'],
+  parts:[
+   {id:'chain',n:'Timing chain set with all-metal gears',p:85},
+   {id:'cover',n:'Timing cover gasket and front seal',p:18},
+   {id:'oil',n:'Oil, filter and an oil pan gasket',p:30},
+   {id:'carb',n:'Rebuilt carburetor',p:150},
+   {id:'dizzy',n:'New distributor',p:90}
+  ],
+  need:s=>s.has('chain')&&s.has('cover')&&s.has('oil'),
+  needMsg:'You need the all-metal timing set, a new cover gasket and seal, and fresh oil with a pan gasket so you can clean the nylon out of the pan.',
+  steps:['Drain the coolant and oil, then remove the fan, belts and water pump.','Pull the harmonic balancer with the balancer puller.','Remove the timing cover.','Line up the timing marks, then take off the old chain and gears.','Fit the new all-metal set with the marks lined up dot to dot.','Drop the oil pan, clean out every bit of nylon, and refit it with a new gasket.','Refit the cover with a new seal, then the balancer, water pump and belts, and refill.'],
+  bad:[
+   {t:'Pry the harmonic balancer off with a tire iron.',cost:90,msg:'You tore the rubber ring inside the balancer. A new balancer costs you $90.'},
+   {t:'Put the new chain on without lining up the marks. It’ll find its own way.',cost:0,nostart:1,msg:'It won’t. The cam is off by several teeth and it backfires through the carburetor.'}
+  ],
+  moral:{q:'While the front of the engine is apart, you notice the water pump is weeping a little at its seal. Doreen only asked you to fix the no-start.',
+   a:[{t:'Call Doreen, show her the pump, and let her decide.',rep:2,cash:0,msg:'She tells you to go ahead. Doing it now saves her paying for the same labour twice.'},
+      {t:'Replace it without asking and add it to the bill.',rep:-2,cash:40,msg:'You make $40. Doreen pays, but she doesn’t like surprises on a bill.'},
+      {t:'Say nothing and put it back together.',rep:-1,cash:0,msg:'Three months later the pump fails, and she has to pay to have the front of the engine taken apart again.'}]},
+  lesson:{title:'Why GM used nylon cam gears',body:'Through the 1970s and 1980s, many GM V8s, including the Oldsmobile 307 in this Cutlass, came with a cam gear that had nylon-coated teeth. It made the engines quieter. After enough kilometres the nylon goes brittle, the teeth break off into the oil pan, and the chain jumps. The 307 is a non-interference engine, so when the chain jumps the valves and pistons don’t meet. Every aftermarket replacement uses all-metal gears.'}
+},
+{ id:'volvo240', when:'June 1993', title:'1989 Volvo 240 DL', art:'wagon', col:'#1f3b5c', pull:'TURN THE KEY',
+  cust:'Gerry Lindqvist', rel:'who drives to Kelowna and back every day', face:'#e0bf9a', pay:150,
+  sp:[0,0,1,1,2,2], bp:[1,1],
+  story:'It just quit on the highway past Oyama. No bang, no noise. It cranks over faster than it ever has, but it won’t catch. It has 180,000 kilometres on it and I’ve never touched the timing belt.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'Good spark.',tool:'tester',rt:'The tester flashes on all four wires.'},
+   {id:'fuel',t:'Check for fuel',r:'You can smell fuel at the tailpipe after cranking. Fuel is getting there.'},
+   {id:'cam',t:'Take off the oil filler cap on the cam cover and crank the engine',r:'The camshaft doesn’t move. Not even a little.'},
+   {id:'belt',t:'Pull the timing belt cover',r:'The belt has snapped. A row of teeth has sheared off it.'},
+   {id:'comp',t:'Run a compression test',r:'Almost nothing on all four cylinders. With the cam stopped, the valves aren’t opening and closing.',req:'compg'}
+  ],
+  diag:[
+   {t:'A snapped timing belt',ok:1,why:'The cam doesn’t turn when you crank it, and the belt is in pieces. With no belt, the valves never open and close, so it spins fast and won’t fire.'},
+   {t:'A dead fuel pump',ok:0,why:'You can smell fuel at the tailpipe. Fuel is getting there.'},
+   {t:'A weak battery',ok:0,why:'It cranks faster than ever. The battery is fine.'},
+   {t:'It’s a Volvo. They never break, so this must be a joke.',ok:0,why:'Even a Volvo needs a timing belt now and then. This one went 180,000 kilometres on the original.'}
+  ],
+  dad:'It cranks too easily. When an engine has nothing to push against, ask what’s supposed to be opening and closing the valves.',
+  gpa:'In North America the B230F in that 240 is a non-interference engine, so a snapped belt usually doesn’t bend the valves. Usually. Put a new belt on, then prove it with a compression test before you hand back the keys.',
+  tools:['sockets','wrench','screw','compg'],
+  parts:[
+   {id:'belt',n:'Timing belt and new tensioner',p:60},
+   {id:'seals',n:'Cam, crank and intermediate shaft seals',p:20,ok:1},
+   {id:'valves',n:'New valves and a valve job',p:400},
+   {id:'pump',n:'Fuel pump',p:120}
+  ],
+  need:s=>s.has('belt'),
+  needMsg:'You need a new timing belt and tensioner.',
+  steps:['Remove the fan, shroud and accessory belts.','Take off the timing belt cover and what’s left of the old belt.','Turn the crank, intermediate shaft and cam by hand until each lines up with its timing mark.','Fit the new belt and tensioner, turn the engine two full turns by hand, and check the marks again.','Run a compression test to prove the valves weren’t damaged.','Refit the cover, belts, fan and shroud.'],
+  bad:[
+   {t:'Reuse the old tensioner to save a few dollars.',cost:70,msg:'The old tensioner bearing seizes two weeks later and chews up the new belt. You redo the job for free and pay $70 in parts.'},
+   {t:'Line up the marks by bumping the starter.',cost:0,nostart:1,msg:'The marks fly past every time. You can only stop on them by turning the engine by hand.'}
+  ],
+  moral:{q:'Gerry asks why there’s a compression test on his bill. “It started, didn’t it?”',
+   a:[{t:'Explain that it proves his valves weren’t bent, so he knows the engine is healthy.',rep:2,cash:0,msg:'Gerry nods. He’d rather pay for a test than guess.'},
+      {t:'Take it off the bill to keep him happy.',rep:1,cash:-20,msg:'He’s happy. You worked for free, but you kept a customer.'},
+      {t:'Tell him to find another mechanic if he doesn’t like it.',rep:-3,cash:0,msg:'He does. So do two of his neighbours.'}]},
+  lesson:{title:'Interference and non-interference engines',body:'In an interference engine the valves and pistons use the same space at different moments. If the timing belt snaps, the valves stop and the pistons hit them. The North American B230F in the Volvo 240 is generally a non-interference engine, so a broken belt usually leaves you stranded with nothing worse than a tow bill. People still argue about it, which is why a good mechanic proves it with a compression test.'}
+},
+{ id:'c10', when:'July 1994', title:'1971 Chevrolet C10, bright green', art:'pickup', col:'#3fbf3f', pull:'TURN THE KEY',
+  cust:'Marty Wiens', rel:'who hauls fruit to the Coast every summer', face:'#c99a6e', pay:150,
+  sp:[0,0,1,1,2,2], bp:[1,2],
+  story:'On hot days it dies climbing the Coquihalla. I pull over, wait twenty minutes, and it fires right back up like nothing happened. On cool mornings it’s perfect.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'Good spark.',tool:'tester',rt:'The tester flashes on all eight wires.'},
+   {id:'comp',t:'Check compression',r:'Healthy and even.',tool:'compg',rt:'Strong and even on all eight cylinders.'},
+   {id:'line',t:'Follow the fuel line along the engine',r:'The steel line runs within a couple of centimetres of the exhaust manifold, and a piece of rubber hose near the fuel pump is cracked and spongy.'},
+   {id:'hot',t:'Run it hot in the bay, then look at the fuel filter',r:'After a long hot idle the clear fuel filter is half empty, with bubbles in the line.'},
+   {id:'carb',t:'Feel the carburetor after a long run',r:'It’s too hot to touch. Heat is soaking up from the intake manifold into the carburetor.'}
+  ],
+  diag:[
+   {t:'Vapour lock: the fuel is boiling in a line that runs too close to the exhaust',ok:1,why:'It dies hot and restarts cold, the filter is full of bubbles, and the fuel line runs right past the exhaust manifold. The fuel turns to vapour before it reaches the carburetor.'},
+   {t:'A worn-out fuel pump',ok:0,why:'A worn pump doesn’t heal itself after twenty minutes at the side of the road. This one only fails when the fuel gets hot.'},
+   {t:'A clogged radiator',ok:0,why:'The temperature gauge never climbs. The engine isn’t overheating. The fuel is.'},
+   {t:'The truck is afraid of heights.',ok:0,why:'It climbs the hill fine on a cool morning. Heat is the problem, not height.'}
+  ],
+  dad:'Dies hot, starts cold. Whatever is failing only fails when it gets hot.',
+  gpa:'Gasoline boils a lot sooner than water does. If it dies hot and restarts cold, the fuel is boiling before it reaches the carburetor. Find where the line is getting cooked.',
+  tools:['wrench','screw','rags','bender'],
+  parts:[
+   {id:'line',n:'Steel fuel line, routed along the frame',p:25},
+   {id:'hose',n:'Fuel-rated rubber hose and clamps',p:8},
+   {id:'spacer',n:'Insulated carburetor spacer',p:20},
+   {id:'sleeve',n:'Heat-reflective sleeve for the fuel line',p:12,ok:1},
+   {id:'pump',n:'New fuel pump',p:60},
+   {id:'rad',n:'New radiator',p:180}
+  ],
+  need:s=>s.has('line')&&s.has('hose')&&s.has('spacer'),
+  needMsg:'You need a new steel line routed away from the heat, new fuel hose, and an insulated spacer to keep heat out of the carburetor.',
+  steps:['Let the engine cool completely before you open the fuel system.','Remove the old line and the cracked rubber hose.','Bend a new steel line and route it along the frame, well away from the exhaust.','Connect it with new fuel hose and proper clamps.','Fit the insulated spacer under the carburetor.','Run it hot in the bay, check for leaks, and take it up a long hill.'],
+  bad:[
+   {t:'Wrap the old line in duct tape to keep the heat off.',cost:0,nostart:1,msg:'The tape goes gooey and drips on the manifold. It still vapour locks.'},
+   {t:'Tape a bag of ice to the fuel pump.',cost:0,nostart:1,msg:'It works until the ice melts, about ten minutes up the hill.'}
+  ],
+  moral:{q:'Marty says a shop in Merritt charged him $600 last month for a new fuel pump that didn’t fix it. He asks if he got ripped off.',
+   a:[{t:'Tell him plainly that the pump wasn’t the problem, without running down the other shop.',rep:2,cash:0,msg:'Marty appreciates the straight answer. Mechanics who trash each other make the whole trade look bad.'},
+      {t:'Tell him the other shop are crooks.',rep:-1,cash:0,msg:'Marty repeats it around town. You don’t know what that shop saw, and now people wonder what you say about them.'}]},
+  lesson:{title:'Vapour lock',body:'Gasoline boils at a much lower temperature than water. When a fuel line runs too close to a hot exhaust, the fuel turns to vapour before it reaches the carburetor, and a mechanical fuel pump built to push liquid can’t push vapour. The engine starves and dies, then restarts once it cools. Older trucks suffer worst on hot days and long climbs.'}
+},
+{ id:'buick', when:'September 1995', title:'1953 Buick Special, straight-eight', art:'oldsedan', col:'#2f4f3a', pull:'TURN THE KEY',
+  cust:'Evelyn Marchand', rel:'whose father parked it in his barn in 1974', face:'#e6c9a8', pay:260,
+  sp:[0,0,1,1,1,2,2], bp:[2,0],
+  story:'Dad put it in the barn in 1974 and never drove it again. I want to drive it in the Winter Carnival parade. It hasn’t turned over in twenty years.',
+  checks:[
+   {id:'turn',t:'Try turning the crankshaft by hand with a breaker bar',r:'It turns, slowly. One spot in each turn feels stiffer than the rest.'},
+   {id:'bore',t:'Pull the plugs and look into the cylinders with a light',r:'Light surface rust on some cylinder walls. No water, no damage.'},
+   {id:'rock',t:'Pull the valve cover and turn the engine slowly',r:'Every rocker moves except one on cylinder 6. That valve is stuck open in its guide, and its pushrod is sitting loose.'},
+   {id:'oil',t:'Check the oil',r:'Thick and black, with sludge in the bottom of the pan.'},
+   {id:'tank',t:'Check the gas tank',r:'The old gas has turned to brown varnish. It smells like paint thinner.'}
+  ],
+  diag:[
+   {t:'A valve stuck open from years of sitting, plus fuel gone to varnish',ok:1,why:'The engine turns, but one valve is stuck in its guide and the gas has turned to varnish. Both must be sorted out before it ever fires.'},
+   {t:'A seized engine',ok:0,why:'A seized engine won’t turn at all. This one turns by hand.'},
+   {t:'A frost-cracked block',ok:0,why:'There’s no water in the cylinders and no coolant in the oil.'},
+   {t:'The car is too old to run.',ok:0,why:'Engines don’t expire. A 1953 straight-eight will run another fifty years if you wake it up properly.'}
+  ],
+  dad:'Twenty years in a barn. Don’t ask what’s wrong with it. Ask what’s wrong with everything.',
+  gpa:'Never crank a long-sleeping engine on the starter until you’ve turned it by hand, oiled the cylinders and checked every valve moves. A stuck valve and a fast crank will bend a pushrod.',
+  tools:['sockets','wrench','screw','rags','brasshammer'],
+  parts:[
+   {id:'oil',n:'Penetrating oil, fresh engine oil and a filter',p:25},
+   {id:'tank',n:'Gas tank cleaned and a new fuel line',p:90},
+   {id:'gas',n:'Fresh gas',p:10},
+   {id:'pushrod',n:'Spare pushrod',p:12,ok:1},
+   {id:'rebuild',n:'Complete engine rebuild',p:2500},
+   {id:'twelve',n:'12-volt electrical conversion',p:300}
+  ],
+  need:s=>s.has('oil')&&s.has('tank')&&s.has('gas'),
+  needMsg:'You need penetrating oil and fresh oil, a cleaned tank with a new line, and fresh gas.',
+  steps:['Pull the plugs and pour penetrating oil into every cylinder. Let it soak overnight.','Drain the varnished gas and send the tank out to be cleaned.','Soak the stuck valve stem and tap it gently with the brass hammer until it moves freely.','Turn the engine two full turns by hand and watch every rocker move.','Drain the sludgy oil, clean the pan and fill with fresh oil.','Crank it with the plugs out until the oil pressure gauge comes up.','Refit the plugs, fill the clean tank with fresh gas, and start it.'],
+  bad:[
+   {t:'Hit the starter and let it rip. It’ll free itself up.',cost:120,msg:'The stuck valve meets the piston. You bend a pushrod and a valve, and pulling the head on a straight-eight costs you $120.'},
+   {t:'Pour the old gas back in. Gas is gas.',cost:0,nostart:1,msg:'It sputters and dies. The varnish plugs the carburetor in minutes.'}
+  ],
+  moral:{q:'A collector sees the Buick in your bay. He offers you $300 to tell Evelyn it isn’t worth fixing, so he can buy it from her cheap.',
+   a:[{t:'Refuse, and tell Evelyn her father’s car is worth saving.',rep:3,cash:0,msg:'Evelyn drives it in the parade. Half of Vernon asks who woke it up.'},
+      {t:'Take the $300.',rep:-4,cash:300,msg:'Evelyn sells her father’s car for a fraction of its value. When she finds out why, so does everyone else.'}]},
+  lesson:{title:'Waking a sleeping engine',body:'An engine that sits for decades dries out. The oil drains off the cylinder walls, valves stick in their guides, and gasoline turns to varnish. Waking one up takes patience: turn it by hand, oil the cylinders, free anything stuck, change every fluid, and build oil pressure before it fires. Buick’s straight-eight, the Fireball Eight, was in its final year in 1953. V8s took over the whole line in 1954.'}
+},
+{ id:'ih', when:'May 1997', title:'1972 International 1210 pickup', art:'pickup', col:'#c9c2a8', pull:'TURN THE KEY',
+  cust:'Rolf Andersen', rel:'who runs cattle out past Lavington', face:'#b88b63', pay:420,
+  sp:[0,0,1,1,1,2,2], bp:[0,1],
+  story:'It cranks over too fast, like there’s nothing stopping it, and the rhythm sounds uneven. When it does start, it’s down on power and it smokes a little.',
+  checks:[
+   {id:'listen',t:'Listen to it crank',r:'Instead of an even rhythm, there’s a quick skip every revolution, as if one cylinder has nothing to push against.'},
+   {id:'comp',t:'Run a dry compression test',r:'Seven cylinders read about 140 psi. Cylinder 7 reads 40.',req:'compg'},
+   {id:'wet',t:'Squirt some oil into cylinder 7 and test it again',r:'It still reads about 40. The oil didn’t help, so the rings aren’t the problem.'},
+   {id:'leak',t:'Run a leak-down test on cylinder 7',r:'With cylinder 7 at top dead centre and shop air in it, you hear air hissing out of the tailpipe.',req:'leakdown'},
+   {id:'spark',t:'Test for spark',r:'Good spark on all eight.',tool:'tester',rt:'The tester flashes on all eight wires.'}
+  ],
+  diag:[
+   {t:'A burned exhaust valve on cylinder 7',ok:1,why:'One cylinder is low, oil doesn’t bring it up, and the air escapes out of the tailpipe. The exhaust valve on cylinder 7 has burned and can’t seal.'},
+   {t:'Worn piston rings on cylinder 7',ok:0,why:'If it were rings, the oil would have sealed them and the wet number would have jumped. It didn’t move.'},
+   {t:'A blown head gasket between two cylinders',ok:0,why:'A gasket failing between two cylinders drops both of them. Only cylinder 7 is low, and the air goes out the tailpipe.'},
+   {t:'The truck is just happy to see you.',ok:0,why:'It’s skipping a beat, but not for joy. One cylinder isn’t sealing.'}
+  ],
+  dad:'You have a dry number and a wet number. If oil brings it up, it’s rings. If it doesn’t, look up top.',
+  gpa:'Air out the tailpipe means an exhaust valve. Air out the carburetor means an intake valve. Air out the oil filler means rings.',
+  tools:['compg','leakdown','sockets','torque','springcomp','straight'],
+  parts:[
+   {id:'gasket',n:'Head gasket set',p:60},
+   {id:'valve',n:'Exhaust valve',p:25},
+   {id:'job',n:'Machine shop valve job on that head',p:220},
+   {id:'rings',n:'Piston ring set',p:140},
+   {id:'engine',n:'Rebuilt engine',p:3200}
+  ],
+  need:s=>s.has('gasket')&&s.has('valve')&&s.has('job'),
+  needMsg:'You need a gasket set, a new exhaust valve, and a valve job on that head at the machine shop.',
+  steps:['Drain the coolant and remove the intake, exhaust manifold and valve cover on that side.','Remove the cylinder head.','Compress the springs and pull the valves.','Send the head to the machine shop to check it for flatness and grind the valve seats.','Fit the new exhaust valve and reassemble the head.','Install the head with a new gasket and torque the bolts in sequence.','Refit the manifolds, set the valves, refill the coolant and test compression again.'],
+  bad:[
+   {t:'Fill the crankcase with the thickest oil you can find to quiet it down.',cost:0,nostart:1,msg:'Cylinder 7 still reads 40. Thick oil can’t seal a burned valve.'},
+   {t:'Lap the burned valve back in with grinding paste and hope it seals.',cost:180,msg:'It seals for a week. Then the burned edge breaks off, and you do the head again for free.'}
+  ],
+  moral:{q:'Rolf asks you to sign off a safety inspection on his brother-in-law’s truck, which has bald tires and soft brakes. “As a favour.”',
+   a:[{t:'Refuse. Your signature means the truck is safe.',rep:3,cash:0,msg:'Rolf grumbles, then brings the truck in for tires and brakes. Nobody gets hurt.'},
+      {t:'Sign it for $100.',rep:-6,cash:100,msg:'You make $100. Your name is now on a truck that can’t stop.'}]},
+  lesson:{title:'Reading a compression test',body:'A dry compression test tells you which cylinder is weak. A wet test tells you why. Squirt a little oil in and test again. If the number jumps, the oil sealed worn rings. If it barely moves, the leak is up top, in a valve or a head gasket. A leak-down test finishes the job by showing you where the air escapes.'}
+},
+{ id:'es1800', when:'August 1999', title:'1973 Volvo 1800ES', art:'shooting', col:'#b8b8b0', pull:'TURN THE KEY',
+  cust:'Ingrid Sorensen', rel:'who has owned it since it was new', face:'#ecd2b5', pay:320,
+  sp:[0,0,1,1,2,2], bp:[1,1],
+  story:'It was running fine on the way down from Silver Star, then it just stopped. No noise. Now it spins over but won’t fire, and it sounds lighter than usual.',
+  checks:[
+   {id:'spark',t:'Test for spark',r:'No spark at all.',tool:'tester',rt:'The tester stays dark on every wire.'},
+   {id:'rotor',t:'Pull the distributor cap and crank the engine',r:'The rotor doesn’t move.'},
+   {id:'rock',t:'Pull the valve cover and crank the engine',r:'The rocker arms aren’t moving either. The camshaft has stopped turning.'},
+   {id:'oil',t:'Drain some oil into a clean pan',r:'Small brown flakes come out with it, like bits of pressed fibre board.'},
+   {id:'comp',t:'Run a compression test',r:'Almost nothing on all four cylinders.',req:'compg'}
+  ],
+  diag:[
+   {t:'A stripped fibre cam gear, so the camshaft has stopped turning',ok:1,why:'No spark because the distributor isn’t turning, no valves moving, and fibre flakes in the oil. The cam gear has stripped its teeth.'},
+   {t:'A dead ignition coil',ok:0,why:'A dead coil gives you no spark, but the rotor would still turn. Here the rotor and the rockers are both standing still.'},
+   {t:'A snapped timing belt',ok:0,why:'The B20 in this car doesn’t have a timing belt. It drives the camshaft with gears.'},
+   {t:'It ran out of Swedish.',ok:0,why:'It runs on gasoline. The camshaft stopped turning.'}
+  ],
+  dad:'No spark and the rotor won’t turn. Don’t chase the ignition. Ask what turns the distributor.',
+  gpa:'Those B20s drive the camshaft with gears, not a belt or a chain. Some came with a cam gear made of fibre. It’s quiet, and it strips. Put a steel one in.',
+  tools:['sockets','wrench','gearpuller','torque'],
+  parts:[
+   {id:'gears',n:'Steel cam gear and crank gear',p:140},
+   {id:'gasket',n:'Timing cover gasket and seal',p:15},
+   {id:'oil',n:'Oil and filter',p:25},
+   {id:'belt',n:'Timing belt kit',p:60},
+   {id:'coil',n:'Ignition coil',p:80}
+  ],
+  need:s=>s.has('gears')&&s.has('gasket')&&s.has('oil'),
+  needMsg:'You need a steel gear set, a cover gasket and seal, and an oil change to flush out the fibre flakes.',
+  steps:['Remove the radiator and fan.','Take off the crank pulley and the timing gear cover.','Pull the stripped fibre gear off the camshaft with the gear puller.','Fit the steel gears with the timing marks lined up.','Change the oil and filter to flush out the fibre.','Refit the cover, pulley, fan and radiator, then set the ignition timing.'],
+  bad:[
+   {t:'Glue the missing teeth back onto the fibre gear.',cost:0,nostart:1,msg:'The glued teeth last about one revolution.'},
+   {t:'Reuse the worn crank gear with the new steel cam gear.',cost:150,msg:'The new gear chews against the worn one and starts to whine. You do the job again and pay $150.'}
+  ],
+  moral:{q:'Looking for the owner’s manual, you find an envelope with $300 cash in the glove box.',
+   a:[{t:'Give it straight back to Ingrid.',rep:3,cash:0,msg:'She’d forgotten it was there. She tells everyone at her church about you.'},
+      {t:'Keep it. She’ll never know.',rep:-6,cash:300,msg:'She remembers exactly where she left it. So does everyone she tells.'}]},
+  lesson:{title:'Gears, chains and belts',body:'Engines drive their camshafts three ways. Older engines like the Volvo B20 use gears that mesh directly. Many V8s use a chain. Most newer overhead-cam engines use a rubber belt. Some B18 and B20 engines came with a fibre cam gear to keep them quiet. It works until the teeth strip, and then the engine simply stops. The 1800ES was the shooting-brake version of the P1800, built only in 1972 and 1973.'}
+},
+{ id:'etype', when:'June 2002', title:'1967 Jaguar E-Type roadster, 4.2 litre', art:'sports', col:'#a8291e', pull:'TURN THE KEY',
+  cust:'Nigel Pembroke', rel:'a retired dentist from Coldstream', face:'#efd6bb', pay:650,
+  sp:[0,0,1,1,2,2], bp:[1,2],
+  story:'There’s a rattle from the top of the engine at idle that wasn’t there last summer. It goes away when I rev it. I’m showing it in Kelowna next month and I want it perfect.',
+  checks:[
+   {id:'stetho',t:'Listen with a mechanic’s stethoscope',r:'The rattle is loudest at the front of the cylinder head, between the two camshafts.',req:'stetho'},
+   {id:'chain',t:'Remove the breather cover on the front of the head and look at the top chain',r:'The upper timing chain has visible slack between the two cam sprockets.'},
+   {id:'comp',t:'Check compression',r:'Even and healthy on all six cylinders.',tool:'compg',rt:'Strong, even compression on all six.'},
+   {id:'oilp',t:'Watch the oil pressure gauge',r:'Good oil pressure, hot and cold.'},
+   {id:'exh',t:'Check the exhaust heat shields from underneath',r:'All tight. Nothing loose underneath.'}
+  ],
+  diag:[
+   {t:'A slack upper timing chain that needs adjusting',ok:1,why:'The rattle is at the front of the head, it fades with revs, and the top chain has visible slack. The XK six has an adjuster for exactly this.'},
+   {t:'Worn main bearings',ok:0,why:'Worn mains knock from the bottom of the engine under load, and the oil pressure drops. This rattle is up top, and the pressure is good.'},
+   {t:'A loose exhaust heat shield',ok:0,why:'The shields are tight, and the stethoscope puts the noise at the front of the head.'},
+   {t:'It’s British. It’s just clearing its throat.',ok:0,why:'British engines rattle for reasons too. This one’s reason is a slack chain.'}
+  ],
+  dad:'It rattles at idle and goes quiet when you rev it. Something up there has slack in it.',
+  gpa:'The XK six has two timing chains. The top one has an adjuster you can reach at the front of the head, behind the breather cover. Adjust it properly and you don’t need to tear anything down. Don’t drop the nut into the engine.',
+  tools:['stetho','screw','wrench','xktool'],
+  parts:[
+   {id:'gasket',n:'Breather cover gasket',p:12},
+   {id:'tissue',n:'Clean rags to stuff around the opening',p:2,ok:1},
+   {id:'chains',n:'Complete timing chain set and an engine-out job',p:1800},
+   {id:'clips',n:'Exhaust heat shield clips',p:10}
+  ],
+  need:s=>s.has('gasket'),
+  needMsg:'You need a new gasket for the breather cover when it goes back on.',
+  steps:['Remove the breather cover from the front of the cylinder head.','Stuff clean rags around the opening so nothing can fall into the engine.','Loosen the locknut slightly and press in the locking plunger on the adjuster.','Turn the serrated adjuster plate with the special tool until the chain has just a little give between the sprockets.','Let the plunger snap back into place and tighten the locknut.','Turn the engine two full turns by hand, recheck the chain, and refit the cover with a new gasket.'],
+  bad:[
+   {t:'Crank the chain as tight as it will go so it can never rattle again.',cost:400,msg:'An overtight chain whines and wears the sprockets. You pay $400 for a new chain and sprockets.'},
+   {t:'Turn up the radio so Nigel can’t hear the rattle.',cost:0,nostart:1,msg:'Nigel can still hear it. So can the judges.'}
+  ],
+  moral:{q:'Nigel asks you to sign a letter saying the car is “numbers matching” for the show. You noticed the engine number doesn’t match the car’s papers.',
+   a:[{t:'Refuse, and show him the mismatch.',rep:3,cash:0,msg:'He’s disappointed, but he shows it honestly and still wins his class.'},
+      {t:'Sign it for $200.',rep:-6,cash:200,msg:'A judge checks the number. Your letter is in the judge’s hand, with your name on it.'}]},
+  lesson:{title:'The XK engine',body:'Jaguar’s XK six first appeared in 1948 and stayed in production in one form or another for more than forty years. Its twin overhead camshafts sit a long way from the crankshaft, so Jaguar used two timing chains, with an adjuster for the upper chain that a mechanic can reach through the breather cover on the front of the head. The chain should never be dead tight. It needs a little slack.'}
+},
+{ id:'cummins', when:'January 2005', title:'1997 Dodge Ram 2500, 5.9 Cummins 12-valve', art:'pickup', col:'#7d1f17', pull:'TURN THE KEY',
+  cust:'Dale Funk', rel:'who plows driveways out in Lumby', face:'#c08f63', pay:500,
+  sp:[0,0,1,1,2,2], bp:[0,1],
+  story:'Minus 32 last night. This morning it cranks and cranks but won’t fire. I had it plugged in all night. It ran fine yesterday.',
+  checks:[
+   {id:'filter',t:'Look at the fuel in the filter bowl',r:'The diesel looks cloudy, like thin wax.'},
+   {id:'where',t:'Ask Dale where he bought his last tank of fuel',r:'He filled up in September from a farm tank. That’s summer diesel.'},
+   {id:'heater',t:'Check the block heater',r:'The block is warm. The engine isn’t the cold part. The fuel is.'},
+   {id:'lines',t:'Crack an injector line while someone cranks it',r:'Almost no fuel comes out.'},
+   {id:'comp',t:'Check compression',r:'Strong on all six.',tool:'compg',rt:'Strong compression on all six cylinders.'}
+  ],
+  diag:[
+   {t:'Summer diesel that has gelled and plugged the fuel filter',ok:1,why:'The fuel is cloudy and waxy, it’s summer diesel at minus 32, and almost nothing reaches the injectors. The wax has come out of the fuel and plugged the filter.'},
+   {t:'A failed injection pump',ok:0,why:'An injection pump can only pump fuel that reaches it. The fuel is turning to wax before it gets there.'},
+   {t:'A burned-out block heater',ok:0,why:'The block is warm. The fuel in the tank and lines isn’t.'},
+   {t:'Diesels hate Mondays.',ok:0,why:'They hate summer fuel at minus 32 even more.'}
+  ],
+  dad:'The engine is warm and the fuel isn’t coming through. Look at the fuel itself.',
+  gpa:'Diesel has wax in it. Get it cold enough and the wax comes out of the fuel and plugs the filter. Summer fuel gives up a lot sooner than winter fuel.',
+  tools:['wrench','rags','filterwrench','sockets'],
+  parts:[
+   {id:'filter',n:'Fuel filter',p:35},
+   {id:'fuel',n:'Winter-blend diesel and anti-gel additive',p:120},
+   {id:'kdp',n:'Dowel pin tab kit',p:40,ok:1},
+   {id:'pump',n:'Injection pump',p:2400},
+   {id:'inj',n:'Six injectors',p:900}
+  ],
+  need:s=>s.has('filter')&&s.has('fuel'),
+  needMsg:'You need a new fuel filter and winter-blend diesel with anti-gel.',
+  steps:['Push the truck into the heated bay and let the fuel system warm up for a few hours.','Drain the gelled fuel out of the filter housing.','Fit a new fuel filter.','Top up the tank with winter-blend diesel and anti-gel additive.','Bleed the air out of the fuel system at the filter and the injector lines.','Crank it and let it idle until it smooths out.'],
+  bad:[
+   {t:'Light a small fire under the fuel tank to thaw it.',cost:800,msg:'The paint blisters, a fuel line melts and the fire department pays you a visit. Repairs cost you $800.'},
+   {t:'Pour a jerry can of gasoline into the tank to thin the diesel.',cost:600,msg:'Gasoline strips the lubrication out of the diesel, and the injection pump starts to wear. You pay $600 toward a pump rebuild.'}
+  ],
+  moral:{q:'Dale offers you $200 cash to skip the invoice, so neither of you pays the tax.',
+   a:[{t:'Write the invoice properly.',rep:2,cash:0,msg:'Dale shrugs and pays it. Clean books are worth more than a quick $200.'},
+      {t:'Take the cash.',rep:-4,cash:200,msg:'You pocket $200. Cash jobs have a way of turning up in an audit.'}]},
+  lesson:{title:'Diesel in a BC winter',body:'Diesel contains paraffin wax. When it gets cold enough, wax crystals form, the fuel clouds, and then it gels and stops flowing through the filter. Fuel sellers switch to a winter blend as the weather turns, which stays liquid at much lower temperatures. The 12-valve Cummins in this truck has another famous weak spot: a dowel pin in the front of the block that can work its way out and fall into the timing gears. A small metal tab, held by a neighbouring bolt, stops it for good.'}
+},
+{ id:'chevelle', when:'May 2007', title:'1970 Chevrolet Chevelle SS 396', art:'muscle', col:'#1d2f6e', pull:'TURN THE KEY',
+  cust:'Darren Sidhu', rel:'whose cousin rebuilt the engine over the winter', face:'#a8774f', pay:900,
+  sp:[0,0,0,1,1,1,2,2], bp:[1,2],
+  story:'My cousin rebuilt the engine over the winter. It ran great for about 800 kilometres. Now it’s down on power, it pops back through the carburetor, and there’s a ticking from the passenger side.',
+  checks:[
+   {id:'rock',t:'Pull the passenger valve cover and watch the rockers while it idles',r:'Every rocker rises and falls the same amount except the intake on cylinder 6, which barely moves.'},
+   {id:'push',t:'Check that pushrod',r:'It’s straight and it spins freely. The pushrod is fine.'},
+   {id:'oil',t:'Ask what oil his cousin used',r:'Modern synthetic oil, the kind made for new cars with roller cams.'},
+   {id:'receipt',t:'Read the receipt for the new cam',r:'It’s a flat-tappet cam. The instructions say to break it in with high-zinc oil at 2,000 to 2,500 rpm for twenty minutes. His cousin let it idle instead.'},
+   {id:'filter',t:'Cut open the oil filter',r:'Fine, shiny metal flakes in the pleats.'},
+   {id:'lift',t:'Measure the lift on that lobe with a dial indicator',r:'It lifts a fraction of what the other intake lobes do.',req:'dial'}
+  ],
+  diag:[
+   {t:'A wiped cam lobe from a bad break-in and low-zinc oil',ok:1,why:'One intake barely lifts, the dial indicator confirms it, there’s metal in the filter, and the cam was broken in at idle on modern oil. The lobe has worn flat.'},
+   {t:'A bent pushrod',ok:0,why:'The pushrod is straight and spins freely. The problem is the lobe underneath it.'},
+   {t:'A collapsed lifter',ok:0,why:'A collapsed lifter gives you a tick, but the dial indicator shows the lobe itself has worn away.'},
+   {t:'The engine misses the cousin.',ok:0,why:'The engine misses a cam lobe.'}
+  ],
+  dad:'One valve barely moves and there’s metal in the filter. Something is wearing itself away. Find out what it is, and find out why.',
+  gpa:'Flat-tappet cams need zinc in the oil and a proper break-in. Today’s oils carry less of it, because zinc and phosphorus wreck catalytic converters. Old engines pay the price.',
+  tools:['sockets','torque','wrench','dial','balpuller'],
+  parts:[
+   {id:'cam',n:'New flat-tappet cam and a full set of new lifters',p:380},
+   {id:'oil',n:'High-zinc break-in oil and cam lube',p:60},
+   {id:'gaskets',n:'Gasket set for the front of the engine and the intake',p:90},
+   {id:'chain',n:'New timing set',p:85,ok:1},
+   {id:'engine',n:'Another complete engine rebuild',p:6500},
+   {id:'roller',n:'Roller cam conversion',p:1800}
+  ],
+  need:s=>s.has('cam')&&s.has('oil')&&s.has('gaskets'),
+  needMsg:'You need a new cam with new lifters, high-zinc break-in oil and cam lube, and the gaskets to put it back together.',
+  steps:['Drain the oil and coolant, then remove the radiator, water pump, balancer and timing cover.','Remove the intake manifold and lift out every lifter.','Slide the old camshaft out carefully.','Flush the metal out of the engine and its oil passages.','Coat the new cam lobes and lifter faces with cam lube and install them.','Fit the timing set with the marks lined up.','Reassemble and fill with high-zinc break-in oil.','Start it and hold it at 2,000 to 2,500 rpm for twenty minutes, then change the oil.'],
+  bad:[
+   {t:'Reuse the old lifters. They look fine.',cost:900,msg:'Old lifters on a new cam wipe it out within an hour. You buy a second cam and lifters.'},
+   {t:'Let it idle for the break-in so it doesn’t work too hard.',cost:900,msg:'That’s exactly how the cousin wiped the first one. You buy another cam.'}
+  ],
+  moral:{q:'Darren asks you to tell his cousin the cam was a bad part, so nobody’s feelings get hurt.',
+   a:[{t:'Tell the cousin the truth kindly, and show him how a flat-tappet break-in is done.',rep:3,cash:0,msg:'The cousin is embarrassed for a minute, then grateful. He builds his next engine right.'},
+      {t:'Blame the part.',rep:-2,cash:0,msg:'The cousin builds his next engine the same way and wipes another cam.'}]},
+  lesson:{title:'Zinc and flat-tappet cams',body:'Older engines use flat-tappet camshafts, where each lifter slides across the face of a cam lobe. That sliding contact relies on an anti-wear additive called ZDDP, which carries zinc and phosphorus. Oil makers cut it back because it poisons catalytic converters, and modern roller-cam engines don’t need as much. A new flat-tappet cam must be broken in with high-zinc oil at a fast idle, or a lobe can wipe flat in minutes.'}
+},
+{ id:'skyline', when:'August 2009', title:'1990 Nissan Skyline GT-R, right-hand drive', art:'coupe', col:'#d8dbe0', pull:'TURN THE KEY',
+  cust:'Kevin Tran', rel:'who imported it from Japan', face:'#d7b38e', pay:1200,
+  sp:[0,0,0,1,1,1,2,2], bp:[1,2],
+  story:'I turned the boost up last month. Now it blows blue smoke, it’s lost a ton of power, and there’s a siren noise from the engine bay when I get on it.',
+  checks:[
+   {id:'shaft',t:'Pull the intake pipe off the rear turbo and feel the shaft',r:'The shaft wobbles side to side, and the compressor wheel has been rubbing its housing.'},
+   {id:'wheel',t:'Look into the exhaust side of the rear turbo with an inspection camera',r:'Chunks are missing from the turbine wheel. It’s ceramic, and it has shattered.',req:'borescope'},
+   {id:'pipe',t:'Check inside the intercooler piping',r:'There’s a film of oil inside the piping.'},
+   {id:'comp',t:'Run a compression test',r:'Even on all six cylinders.',req:'compg'},
+   {id:'boost',t:'Check the boost controller',r:'It’s set well past stock boost.'}
+  ],
+  diag:[
+   {t:'A failed rear turbo: a shattered ceramic turbine wheel and worn shaft bearings from too much boost',ok:1,why:'Shaft play, a shattered turbine wheel, oil in the intercooler piping and a boost controller turned way up. The turbo failed, and the cause is sitting on the dash.'},
+   {t:'A blown head gasket',ok:0,why:'Compression is even on all six, and the smoke is blue, which is oil. A head gasket usually gives you white smoke and uneven compression.'},
+   {t:'Worn piston rings',ok:0,why:'Worn rings would show in the compression test. The oil is coming from the turbo, which is why it’s in the intercooler piping.'},
+   {t:'It wants to go back to Japan.',ok:0,why:'It wants its boost turned back down.'}
+  ],
+  dad:'It broke right after somebody turned something up. Fix the part, and fix whatever broke it.',
+  gpa:'I never worked on a turbo in my life, but I know this much: when a part breaks after somebody turned something up, turn it back down before you fix it.',
+  tools:['sockets','torque','wrench','borescope'],
+  parts:[
+   {id:'turbos',n:'Matched pair of turbos with steel turbine wheels',p:2600},
+   {id:'lines',n:'New oil feed and return lines and gaskets',p:120},
+   {id:'clean',n:'Intercooler and piping cleaning',p:40},
+   {id:'engine',n:'Replacement engine from Japan',p:7000},
+   {id:'big',n:'Bigger aftermarket turbos for even more boost',p:5500}
+  ],
+  need:s=>s.has('turbos')&&s.has('lines')&&s.has('clean'),
+  needMsg:'You need the turbos, new oil lines and gaskets, and a thorough clean of the intercooler and piping.',
+  steps:['Disconnect the battery and drain the coolant.','Remove the intake piping, the exhaust housings and the oil and coolant lines to both turbos.','Unbolt and lift out both turbos.','Clean every piece of ceramic and every trace of oil out of the exhaust manifold and intercooler piping.','Fit the new turbos with new oil feed and return lines.','Prime each turbo with clean oil before the first start.','Reassemble, refill, and set the boost back to a safe level.','Start it, check for leaks and take it for a gentle test drive.'],
+  bad:[
+   {t:'Skip cleaning the intercooler piping. It’s only a bit of oil.',cost:2600,msg:'A leftover chunk of ceramic gets sucked into a new compressor wheel and destroys it. You buy another turbo.'},
+   {t:'Turn the boost up even higher to blow the smoke out.',cost:0,nostart:1,msg:'That’s how this started.'}
+  ],
+  moral:{q:'Kevin asks you to turn the boost right back up before he picks it up.',
+   a:[{t:'Leave it at a safe level and explain why.',rep:3,cash:0,msg:'Kevin isn’t thrilled, but the new turbos are still going strong next summer.'},
+      {t:'Turn it up for a $150 tip.',rep:-3,cash:150,msg:'He tips you $150. The new turbos last until October, and he tells people you did the work.'}]},
+  lesson:{title:'The cars that came over from Japan',body:'Canada lets in cars from other countries once they are fifteen years old. The United States makes people wait twenty-five years. That’s why BC roads are full of right-hand-drive Skylines, Supras and vans from Japan. The R32 Skyline GT-R used two turbochargers with lightweight ceramic turbine wheels. They spool up fast, but turned up past what they were built for, the ceramic can shatter.'}
+},
+{ id:'smart', when:'March 2012', title:'2009 Smart fortwo', art:'micro', col:'#3a3a3a', pull:'TURN THE KEY',
+  cust:'Tamsin Hale', rel:'who uses it for her mobile dog-grooming business', face:'#e8c4a0', pay:800,
+  sp:[0,0,0,1,1,1,2,2], bp:[0,2],
+  story:'It shakes at idle, the engine light flashes, and it’s burning oil. I’m topping it up every week. It has 140,000 kilometres on it.',
+  checks:[
+   {id:'plugs',t:'Pull the spark plugs',r:'Cylinder 2’s plug is oily and black. The other two are tan.'},
+   {id:'coil',t:'Swap the coil from cylinder 2 to cylinder 1',r:'The miss stays on cylinder 2. The coil is fine.'},
+   {id:'comp',t:'Run a dry compression test',r:'Cylinders 1 and 3 are healthy. Cylinder 2 is very low.',req:'compg'},
+   {id:'wet',t:'Run a wet test on cylinder 2',r:'The oil barely changes the number.'},
+   {id:'leak',t:'Run a leak-down test on cylinder 2',r:'Air hisses out of the exhaust.',req:'leakdown'}
+  ],
+  diag:[
+   {t:'A burned exhaust valve on cylinder 2, cooked by oil the gummed-up oil control rings let into the cylinder',ok:1,why:'Low compression that oil doesn’t fix, air out the exhaust, and an oil-soaked plug. The valve burned, and the oil that cooked it came past the oil control rings.'},
+   {t:'A bad coil pack',ok:0,why:'You swapped the coil to another cylinder and the miss stayed put. The coil is fine.'},
+   {t:'A dirty air filter',ok:0,why:'A dirty filter affects all three cylinders. This is one cylinder that can’t hold compression.'},
+   {t:'It’s too small to hold all that oil.',ok:0,why:'It holds plenty. It just shouldn’t be burning it.'}
+  ],
+  dad:'Two problems are hiding as one. Something burned, and something put the oil there to burn it.',
+  gpa:'Fix the damage and fix the cause, or you’ll see it back in a year.',
+  tools:['sockets','torque','compg','leakdown','springcomp','enginejack'],
+  parts:[
+   {id:'head',n:'Cylinder head rebuild with new valves',p:900},
+   {id:'rings',n:'Piston rings and an engine gasket set',p:450},
+   {id:'coil',n:'Coil pack',p:120},
+   {id:'used',n:'Used engine from the wrecker, kilometres unknown',p:2500}
+  ],
+  need:s=>s.has('head')&&s.has('rings'),
+  needMsg:'You need the head rebuild for the burned valve and new rings for the cause.',
+  steps:['Support the engine from below and lower it out of the car.','Remove the cylinder head.','Push out the pistons and check the cylinder walls.','Send the head out for new valves and a valve job.','Clean the ring grooves and fit new rings, including the oil control rings.','Reassemble the bottom end with new gaskets.','Fit the rebuilt head and torque the bolts in sequence.','Reinstall the engine, refill it, and test compression on all three cylinders.'],
+  bad:[
+   {t:'Just replace the coil pack. That’s what the internet said.',cost:120,msg:'You spent $120, and it still misses on cylinder 2.'},
+   {t:'Fill it with the thickest oil you can find so it burns less.',cost:0,nostart:1,msg:'It still misses. Thick oil doesn’t fix a burned valve.'}
+  ],
+  moral:{q:'Tamsin is short on money. The wrecker has a used engine for less than your rebuild, with unknown kilometres.',
+   a:[{t:'Lay out both options honestly, with the risks of each.',rep:3,cash:0,msg:'She picks the rebuild because you explained it straight. She sends you three customers.'},
+      {t:'Tell her the used engine is junk so you keep the job.',rep:-3,cash:0,msg:'She finds out the wrecker’s engine was fine. She also finds another mechanic.'}]},
+  lesson:{title:'Fix the cause, not only the damage',body:'The Smart fortwo of this era uses a one-litre three-cylinder engine. A known weak spot is the oil control rings, which can gum up and leave oil in the top of the cylinder, where it cooks the valves and leads to a misfire from low compression. The engine is small and comparatively cheap to rebuild. A good mechanic fixes the burned valve and the rings that caused it.'}
+},
+{ id:'tremor', when:'October 2015', title:'2014 Ford F-150 Tremor, 3.5 EcoBoost', art:'pickup', col:'#1a1a1a', pull:'TURN THE KEY',
+  cust:'Brandon Kerr', rel:'a framer who tows his work trailer every day', face:'#c89c74', pay:1400,
+  sp:[0,0,0,1,1,1,2,2], bp:[0,2],
+  story:'On cold mornings it rattles for a couple of seconds when it first starts, then goes quiet. It’s getting longer every week. I tow a lot and I’ve been stretching my oil changes.',
+  checks:[
+   {id:'cold',t:'Leave it overnight and listen to a cold start',r:'A clear rattle from the top front of the engine for about three seconds, then it goes quiet.',req:'stetho'},
+   {id:'oil',t:'Look at the oil change records',r:'He’s been going about 15,000 kilometres between changes while towing.'},
+   {id:'tens',t:'Remove the valve covers and check the chains and tensioners',r:'The timing chains have stretched, and the tensioner on one side is near the end of its travel.'},
+   {id:'turbo',t:'Check the turbos for shaft play',r:'Both turbos are tight. No play, no oil in the intake.'},
+   {id:'plugs',t:'Pull the spark plugs',r:'All six look the same, a little worn but normal.'}
+  ],
+  diag:[
+   {t:'Stretched timing chains and worn cam phasers, made worse by long oil changes',ok:1,why:'The rattle comes at cold start before the oil pressure builds, it comes from the top front, and the chains are stretched with a tensioner near its limit. Long oil changes while towing sped it up.'},
+   {t:'Failing turbochargers',ok:0,why:'Both turbos are tight with no play. Turbos don’t rattle for three seconds and then stop.'},
+   {t:'Worn spark plugs',ok:0,why:'Worn plugs cause a misfire, not a rattle at the front of the engine.'},
+   {t:'The truck doesn’t like mornings.',ok:0,why:'It doesn’t like 15,000-kilometre oil changes.'}
+  ],
+  dad:'It rattles cold and goes quiet once the oil gets around. Whatever is loose gets taken up by oil pressure.',
+  gpa:'Chains live on clean oil. Stretch the oil changes and you stretch the chains.',
+  tools:['sockets','torque','wrench','stetho','camtools'],
+  parts:[
+   {id:'timing',n:'Timing chains, guides, tensioners and cam phasers',p:1600},
+   {id:'gaskets',n:'Front cover and valve cover gaskets',p:180},
+   {id:'oil',n:'Oil and filter',p:90},
+   {id:'turbos',n:'Pair of turbochargers',p:3500},
+   {id:'engine',n:'New engine',p:9000}
+  ],
+  need:s=>s.has('timing')&&s.has('gaskets')&&s.has('oil'),
+  needMsg:'You need the full timing set with phasers, the gaskets to seal it back up, and fresh oil.',
+  steps:['Drain the oil and coolant, and remove the radiator and accessories from the front.','Remove the valve covers and the front cover.','Lock the camshafts with the cam holding tools.','Remove the old chains, guides, tensioners and phasers.','Fit the new phasers, chains, guides and tensioners with every timing mark lined up.','Turn the engine two full turns by hand and check every mark again.','Refit the covers with new gaskets, then refill the oil and coolant.','Start it cold the next morning and listen.'],
+  bad:[
+   {t:'Skip the cam holding tools. You can hold the cams with your hands.',cost:2000,msg:'A cam snaps around under valve spring pressure and the timing is lost. You spend $2,000 of your own time and parts sorting it out.'},
+   {t:'Tell him to use thicker oil to quiet it down.',cost:0,nostart:1,msg:'It still rattles every cold morning, and the chains keep stretching.'}
+  ],
+  moral:{q:'Brandon asks if he really needs to change his oil more often. A busier shop would just do the job and keep quiet so he comes back.',
+   a:[{t:'Tell him straight: change it sooner when you tow, or you’ll be back.',rep:3,cash:0,msg:'He listens. His truck outlives his next two trailers.'},
+      {t:'Tell him his oil changes are fine.',rep:-2,cash:0,msg:'He’s back in three years with the same rattle, and this time he knows you could have warned him.'}]},
+  lesson:{title:'Turbos, chains and clean oil',body:'Ford’s 3.5 litre EcoBoost V6 uses twin turbochargers to make big-engine power from a smaller engine. Its cams are driven by chains, and the cam phasers that adjust valve timing rely on clean oil at the right pressure. Long oil changes, especially while towing, wear the chains and phasers faster. A rattle for a few seconds on a cold start is the classic early warning.'}
+},
+{ id:'jagxf', when:'June 2016', title:'2015 Jaguar XF, 3.0 supercharged V6', art:'saloon', col:'#0d1b2a', pull:'PRESS START',
+  cust:'Melissa Grant', rel:'a realtor in Kelowna', face:'#e0b894', pay:1500,
+  sp:[0,0,0,1,1,2,2,2], bp:[0,2],
+  story:'There’s a clattering rattle from the engine at idle, worst when it’s warm. The dealer wanted to keep it for a week. Someone told me you were the person to see.',
+  checks:[
+   {id:'stetho',t:'Listen with the stethoscope',r:'The clatter is loudest at the front of the supercharger, where its drive comes in.',req:'stetho'},
+   {id:'tsb',t:'Look up the service bulletins for this engine',r:'Jaguar published a bulletin for a clattering, knocking or rattling noise on 3.0 supercharged V6 engines. It traces the noise to wear in the supercharger drive’s torsional isolator.'},
+   {id:'chain',t:'Check the timing chain tension through the inspection port',r:'The chains and tensioners look healthy.'},
+   {id:'pump',t:'Check the water pump',r:'No leaks and no noise from the pump.'},
+   {id:'rev',t:'Rev it gently',r:'The clatter fades as the revs come up.'}
+  ],
+  diag:[
+   {t:'A worn torsional isolator in the supercharger drive, causing backlash and a clatter',ok:1,why:'The noise is loudest at the supercharger drive, it fades with revs, the chains are healthy, and Jaguar’s own bulletin describes this exact noise.'},
+   {t:'Stretched timing chains',ok:0,why:'The chains and tensioners look healthy, and the stethoscope puts the noise at the supercharger.'},
+   {t:'A failing water pump',ok:0,why:'The pump is dry and quiet.'},
+   {t:'It’s nervous because it knows you fixed a Smart.',ok:0,why:'Jaguars have no feelings about Smarts. It has a worn isolator.'}
+  ],
+  dad:'You’ve learned to listen. Now learn to read: somebody has seen this noise before you.',
+  gpa:'In my day the only thing blowing air into an engine was the wind. But a rattle that fades when you rev it is usually something with slack in it.',
+  tools:['sockets','torque','stetho','scholder'],
+  parts:[
+   {id:'iso',n:'Supercharger isolator kit',p:450},
+   {id:'gaskets',n:'Supercharger gaskets',p:60},
+   {id:'coolant',n:'Coolant',p:40,ok:1},
+   {id:'sc',n:'Complete new supercharger',p:4500},
+   {id:'chains',n:'Timing chain kit',p:1400}
+  ],
+  need:s=>s.has('iso')&&s.has('gaskets'),
+  needMsg:'You need the isolator kit and new gaskets for the supercharger.',
+  steps:['Drain the coolant and remove the engine cover and intake.','Disconnect the supercharger’s coolant hoses and connectors.','Unbolt the supercharger and lift it off the engine.','Remove the snout and take out the worn isolator.','Install the new isolator kit.','Refit the supercharger with new gaskets and torque every bolt to spec.','Refill and bleed the cooling system.','Start it warm and listen with the stethoscope.'],
+  bad:[
+   {t:'Tell her it’s normal. Jaguars are supposed to sound like that.',cost:0,nostart:1,msg:'She drives away. The clatter gets worse, and she comes back annoyed.'},
+   {t:'Torque the supercharger bolts by feel. You’ve been doing this for thirty years.',cost:900,msg:'One bolt strips its aluminium thread. A thread repair and a lost day cost you $900.'}
+  ],
+  moral:{q:'Melissa says the dealer quoted $6,000 for a whole new supercharger. She was ready to pay that, so she asks what you’ll charge.',
+   a:[{t:'Charge a fair price for the isolator job.',rep:3,cash:0,msg:'She saves thousands, and she sells houses to half the Okanagan. Guess who she recommends.'},
+      {t:'Charge her $6,000. She was ready to pay it.',rep:-6,cash:4000,msg:'You make $4,000 extra. She reads the bulletin later and tells everyone she knows.'}]},
+  lesson:{title:'Reading the bulletins',body:'Car makers publish technical service bulletins when a pattern of problems shows up. Jaguar issued one for a clattering noise in its 3.0 litre supercharged V6 and traced it to wear in the torsional isolator that drives the supercharger. A master mechanic still listens, tests and proves the cause, but checks the bulletins before ordering expensive parts.'}
+},
+{ id:'porsche', when:'December 2016', title:'2003 Porsche 911 Carrera (996)', art:'porsche', col:'#c9a227', pull:'TURN THE KEY',
+  cust:'Vivian Okafor', rel:'who just bought her dream car', face:'#8a5a3b', pay:2000,
+  sp:[0,0,0,1,1,1,2,2], bp:[0,1],
+  story:'I just bought it. It runs beautifully, but the clutch is slipping, and everyone at the Porsche club keeps saying three letters to me: I, M, S. I want you to look it over before I fall any further in love.',
+  checks:[
+   {id:'year',t:'Check the year and engine',r:'A 2003 Carrera with the M96 engine. Cars from these years came with a single-row intermediate shaft bearing.'},
+   {id:'filter',t:'Cut open the oil filter and check it with a magnet',r:'A fine glitter of steel particles clings to the magnet. Not a lot, but it shouldn’t be there.'},
+   {id:'clutch',t:'Test the clutch',r:'It slips in fourth gear under load. It needs replacing, which means taking the transmission out.'},
+   {id:'records',t:'Read the service records',r:'Long oil change intervals and very little driving for years.'},
+   {id:'listen',t:'Listen to the back of the engine at idle',r:'Quiet. No grinding yet.',req:'stetho'}
+  ],
+  diag:[
+   {t:'An intermediate shaft bearing starting to wear, caught before it fails',ok:1,why:'Steel particles in the filter on a car with the failure-prone single-row bearing, with years of long oil changes. With the transmission coming out for the clutch anyway, this is the time to replace it.'},
+   {t:'Nothing to worry about. Steel in the filter is normal.',ok:0,why:'Steel in the filter of this engine is an early warning. When this bearing fails, it can destroy the engine.'},
+   {t:'Worn piston rings',ok:0,why:'Worn rings don’t put steel glitter in the filter.'},
+   {t:'The car is jealous of the Jaguar.',ok:0,why:'It might be. But the bearing is what needs your attention.'}
+  ],
+  dad:'You’ve got a small warning and a big job coming anyway. Think about what makes sense to do while it’s apart.',
+  gpa:'The best time to fix a weak part is when you already have your hands right next to it.',
+  tools:['sockets','torque','enginejack','imstool','stetho'],
+  parts:[
+   {id:'ims',n:'Upgraded intermediate shaft bearing retrofit kit',p:900},
+   {id:'clutch',n:'Clutch, flywheel and release bearing',p:1800},
+   {id:'rms',n:'Rear main seal',p:60},
+   {id:'oil',n:'Oil and filter',p:120},
+   {id:'engine',n:'Replacement engine',p:16000}
+  ],
+  need:s=>s.has('ims')&&s.has('clutch')&&s.has('rms')&&s.has('oil'),
+  needMsg:'You need the bearing retrofit, the clutch kit, a rear main seal while it’s open, and fresh oil.',
+  steps:['Raise the car, then remove the exhaust and the transmission.','Remove the clutch and flywheel.','Lock the camshafts and the crankshaft in place with the special tools.','Remove the cover and pull the old intermediate shaft bearing.','Install the upgraded bearing.','Fit a new rear main seal.','Install the new flywheel and clutch, then refit the transmission and exhaust.','Fill with fresh oil, start it, and check the filter again after a short drive.'],
+  bad:[
+   {t:'Pull the bearing without locking the cams and crank.',cost:3000,msg:'The cam timing slips. You spend $3,000 of your own money retiming the engine.'},
+   {t:'Do the clutch only. The bearing is the customer’s problem.',cost:0,nostart:1,msg:'You’d have to pull the transmission again to reach the bearing later. That isn’t how a master mechanic works.'}
+  ],
+  moral:{q:'Vivian asks if she should sell the car before the bearing fails, and whether you’ll tell the next buyer about it.',
+   a:[{t:'Tell her it’s fixed now, with a better bearing than it left the factory with. Give her the paperwork to prove it.',rep:3,cash:0,msg:'She keeps the car. The receipt for the bearing makes it worth more if she ever sells.'},
+      {t:'Offer to buy it from her cheap, since she’s nervous.',rep:-5,cash:0,msg:'She sells it to you, then reads the paperwork you wrote. She doesn’t speak to you again.'}]},
+  lesson:{title:'The intermediate shaft bearing',body:'Porsche’s M96 engines use an intermediate shaft to drive the camshafts, and it spins on a sealed bearing. Cars from roughly 2000 to 2005 came with a smaller single-row bearing that failed far more often than the earlier design. Steel in the oil filter can be an early warning. Because the bearing sits behind the clutch, the smart time to replace it is whenever the transmission comes out.'}
 }
-
 ];
-const ROAD=[
- ['1986 Oldsmobile Cutlass','1988'],
- ['1989 Volvo 240 DL','1990'],['1953 Buick Special','Classic job'],['1971 Chevy C10, bright green','Classic job'],['1973 Volvo 1800ES','Classic job'],
- ['A P1800 with three million miles on it','Classic job'],['Fleet trucks','Fast Start Fleet'],['Turbo rebuilds','The 1990s'],['Nissan Skyline and Subaru SVX','The 1990s'],
- ['Dodge Cummins and Duramax diesels','The 2000s'],['A dragster on 104-octane fuel','Master mechanic'],['Your own shop, your house and your own classic car collection','The dream']
-];
+const ROAD=null;
 
 /* ---------- state ---------- */
 let S=null;
 function fresh(name){return{name,town:'Falkland',iou:0,cash:60,rep:0,fs:0,job:0,loan:0,tools:Object.keys(TOOLS).filter(k=>TOOLS[k].start),upg:[],seen:['intro'],done:[],truck:false}}
 function save(){store.set(S)}
 function rankOf(n){let r=RANKS[0];for(const x of RANKS)if(n>=x.at)r=x;return r}
+function tally(n){const sets=Math.floor(n/5),r=n%5;let h='<span class="tal">';for(let k=0;k<sets;k++)h+='<span class="set full">'+'<i></i>'.repeat(5)+'</span>';h+='<span class="set">'+[0,1,2,3,4].map(i=>'<i class="'+(i<r?'on':'')+'"></i>').join('')+'</span>';return h+'</span>'}
 function bars(b){return '<span class="bars">'+[0,1,2,3,4].map(i=>'<i class="'+(i===b?'r':'')+'"></i>').join('')+'</span>'}
 function statHTML(){const r=rankOf(S.fs);return `<div><span class="lab">Cash</span><b>$${S.cash}</b>${S.loan?'<span class="small"> owes Dad $'+S.loan+'</span>':''}</div>
  <div><span class="lab">Reputation</span><b>${S.rep>0?'+':''}${S.rep}</b></div>
- <div style="text-align:right"><span class="lab">Fast Starts: ${S.fs}</span>${bars(r.bar)}</div>`}
+ <div style="text-align:right"><span class="lab">Fast Starts: ${S.fs}</span>${tally(S.fs)}</div>`}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)}
 function modal(html){$('modalCard').innerHTML=html;$('modal').classList.add('on');const b=$('modalCard').querySelector('[data-close]');if(b)b.onclick=closeModal}
 function closeModal(){$('modal').classList.remove('on')}
@@ -504,7 +1074,25 @@ function spend(amt,what,then){
 }
 
 /* ---------- drawings ---------- */
-function machineSVG(k){
+function carShape(k,c){
+ const W=(x,r)=>`<circle cx="${x}" cy="152" r="${r}" fill="#1a1a1a"/><circle cx="${x}" cy="152" r="${r*.45}" fill="#bbb"/>`;
+ const glass='#cfe3f0';
+ const S={
+  sedan:`<path d="M45 150 L48 118 L110 112 L140 84 L250 84 L285 112 L355 118 L358 150Z" fill="${c}"/><path d="M146 90 L196 90 L196 112 L122 112Z M204 90 L246 90 L274 112 L204 112Z" fill="${glass}"/>${W(105,22)}${W(295,22)}`,
+  wagon:`<path d="M45 150 L48 116 L105 110 L130 82 L330 82 L345 110 L355 116 L356 150Z" fill="${c}"/><path d="M137 88 L190 88 L190 110 L114 110Z M198 88 L262 88 L262 110 L198 110Z M270 88 L325 88 L336 110 L270 110Z" fill="${glass}"/>${W(100,22)}${W(300,22)}`,
+  pickup:`<path d="M40 150 L42 112 L120 108 L140 74 L215 74 L222 108 L230 108 L230 150Z" fill="${c}"/><rect x="230" y="104" width="130" height="46" fill="${c}"/><rect x="230" y="100" width="130" height="6" fill="#00000033"/><path d="M146 80 L208 80 L212 106 L130 106Z" fill="${glass}"/>${W(95,24)}${W(305,24)}`,
+  oldsedan:`<path d="M40 150 Q40 110 90 104 Q120 70 200 68 Q280 70 300 104 Q355 110 360 150Z" fill="${c}"/><path d="M128 84 Q160 74 196 74 L196 102 L110 102Z M204 74 Q250 76 280 102 L204 102Z" fill="${glass}"/><rect x="40" y="132" width="320" height="5" fill="#d8d8d8"/>${W(100,22)}${W(300,22)}`,
+  shooting:`<path d="M42 150 L46 120 Q90 108 130 106 L160 82 L330 82 L345 114 L356 150Z" fill="${c}"/><path d="M166 88 L250 88 L250 108 L144 108Z M258 88 L326 88 L338 108 L258 108Z" fill="${glass}"/>${W(105,21)}${W(300,21)}`,
+  sports:`<path d="M30 150 Q34 118 90 112 Q140 104 200 104 L230 84 L280 84 Q330 98 360 126 L362 150Z" fill="${c}"/><path d="M236 89 L276 89 L300 106 L226 106Z" fill="${glass}"/><ellipse cx="45" cy="128" rx="10" ry="8" fill="${glass}"/>${W(100,20)}${W(300,20)}`,
+  muscle:`<path d="M35 150 L38 116 L120 110 L150 84 L245 84 L280 110 L362 116 L364 150Z" fill="${c}"/><rect x="38" y="122" width="324" height="6" fill="#ffffff" opacity=".8"/><path d="M156 90 L198 90 L198 110 L134 110Z M206 90 L240 90 L266 110 L206 110Z" fill="${glass}"/>${W(105,23)}${W(295,23)}`,
+  coupe:`<path d="M40 150 L42 118 L115 110 L150 82 L245 82 L285 108 L358 116 L360 150Z" fill="${c}"/><rect x="330" y="100" width="34" height="6" fill="#222"/><path d="M156 88 L200 88 L200 108 L130 108Z M208 88 L240 88 L268 108 L208 108Z" fill="${glass}"/><circle cx="345" cy="128" r="6" fill="#e33"/><circle cx="330" cy="128" r="6" fill="#e33"/>${W(105,22)}${W(295,22)}`,
+  micro:`<path d="M120 150 L120 100 Q130 70 180 66 L240 66 Q280 70 285 110 L285 150Z" fill="${c}"/><path d="M120 108 L285 108 L285 150 L120 150Z" fill="#b8bcc4"/><path d="M140 76 L235 74 L250 104 L132 104Z" fill="${glass}"/>${W(150,20)}${W(258,20)}`,
+  saloon:`<path d="M38 150 L40 120 Q100 108 128 106 L165 80 L255 80 Q300 92 330 112 L362 120 L364 150Z" fill="${c}"/><path d="M170 86 L212 86 L212 106 L144 106Z M220 86 L252 86 L290 106 L220 106Z" fill="${glass}"/>${W(105,22)}${W(300,22)}`,
+  porsche:`<path d="M36 150 Q40 122 95 114 Q150 92 190 80 Q260 74 310 104 Q355 116 364 150Z" fill="${c}"/><path d="M196 86 Q250 82 292 106 L180 106Z" fill="${glass}"/><ellipse cx="80" cy="120" rx="12" ry="9" fill="${glass}"/>${W(105,21)}${W(300,21)}`
+ };
+ return S[k]||S.sedan;
+}
+function machineSVG(k,col){
  const base='<rect x="0" y="0" width="400" height="200" fill="#11284a"/><rect x="0" y="150" width="400" height="50" fill="#3a3a38"/><ellipse cx="200" cy="168" rx="150" ry="10" fill="#000" opacity=".35"/>';
  const m={
   mower:`<rect x="110" y="120" width="190" height="34" rx="10" fill="#7d1f17"/><rect x="110" y="120" width="190" height="8" fill="#a8291e"/>
@@ -529,37 +1117,37 @@ function machineSVG(k){
    <path d="M90 140 L250 140 L300 110 L300 90 L220 76 L130 96 L90 112Z" fill="#E9C243"/><path d="M220 76 L300 90 L300 110 L240 104Z" fill="#111"/>
    <rect x="150" y="84" width="60" height="14" rx="5" fill="#222"/><rect x="80" y="128" width="150" height="20" rx="8" fill="#333"/><path d="M200 70 L216 52" stroke="#888" stroke-width="5"/><rect x="204" y="48" width="30" height="6" rx="3" fill="#222"/>`
  };
- return `<svg viewBox="0 0 400 200" role="img" aria-label="${esc(k)}">${base}${m[k]||''}</svg>`;
+ return `<svg viewBox="0 0 400 200" role="img" aria-label="${esc(k)}">${base}${m[k]||carShape(k,col||'#888')}</svg>`;
 }
 function garageSVG(){
  const u=id=>S.upg.includes(id), t=S.tools.length;
  const vb=S.town==='Vernon';
- const wall=u('paint')?'<rect width="400" height="170" fill="#EFE6D2"/><rect y="120" width="400" height="50" fill="#0E2442"/><rect y="116" width="400" height="5" fill="#A8291E"/>'
+ const wall=(u('paint')||S.ownShop)?'<rect width="400" height="170" fill="#EFE6D2"/><rect y="120" width="400" height="50" fill="#0E2442"/><rect y="116" width="400" height="5" fill="#A8291E"/>'
   :vb?'<rect width="400" height="170" fill="#8d8f8c"/>'+Array.from({length:12},(_,r)=>Array.from({length:9},(_,c)=>`<rect x="${c*46+(r%2)*23-10}" y="${r*15}" width="44" height="13" fill="#9a9c99"/>`).join('')).join(''):'<rect width="400" height="170" fill="#7a5a3a"/>'+[20,95,170,245,320].map(x=>`<rect x="${x}" y="0" width="2" height="170" fill="#4d3824"/>`).join('')+'<ellipse cx="70" cy="60" rx="30" ry="18" fill="#5a4129" opacity=".6"/><ellipse cx="300" cy="100" rx="40" ry="14" fill="#5a4129" opacity=".5"/><path d="M200 0 L210 40 L204 80" stroke="#3b2a19" stroke-width="2" fill="none"/>';
  const light=u('lights')?'<rect x="80" y="8" width="90" height="7" rx="3" fill="#f6fbff"/><rect x="230" y="8" width="90" height="7" rx="3" fill="#f6fbff"/><rect width="400" height="240" fill="#fff" opacity=".06"/>'
   :'<line x1="200" y1="0" x2="200" y2="20" stroke="#111" stroke-width="2"/><circle cx="200" cy="26" r="8" fill="#ffe9a0"/><circle cx="200" cy="26" r="70" fill="#ffd56a" opacity=".12"/>';
  const peg=u('peg')?`<rect x="250" y="34" width="130" height="70" fill="#b08a5a" stroke="#6b4f2c" stroke-width="2"/>`+Array.from({length:Math.min(t,14)},(_,i)=>`<rect x="${258+(i%7)*17}" y="${42+Math.floor(i/7)*30}" width="6" height="22" rx="2" fill="${i%3?'#9aa':'#A8291E'}"/>`).join('')
   :'<rect x="262" y="70" width="70" height="30" fill="#4a4a48"/><text x="297" y="90" font-size="10" fill="#ddd" text-anchor="middle">TOOLBOX</text>';
  const leak=(u('roof')||vb)?'':'<rect x="150" y="186" width="26" height="22" fill="#8a8f96"/><ellipse cx="163" cy="186" rx="13" ry="4" fill="#5f6670"/><line x1="163" y1="0" x2="163" y2="170" stroke="#9cc" stroke-width="1" stroke-dasharray="3 14"/>';
- const sign=u('sign')?`<rect x="20" y="16" width="160" height="30" rx="4" fill="#0E2442" stroke="#E9C243" stroke-width="3"/><text x="100" y="37" font-size="13" font-weight="900" font-style="italic" fill="#E9C243" text-anchor="middle" font-family="Barlow Condensed,sans-serif">${esc(S.name.toUpperCase())}'S SMALL ENGINES</text>`:'';
- const tally='<rect x="24" y="62" width="96" height="62" fill="#1d2a22" stroke="#6b4f2c" stroke-width="4"/><text x="72" y="78" font-size="10" fill="#ddd" text-anchor="middle" font-family="Barlow Condensed,sans-serif">FAST STARTS</text>'
-  +Array.from({length:Math.min(S.fs,20)},(_,i)=>{const g=Math.floor(i/5),j=i%5,x=34+(g%2)*42+j*7,y=86+Math.floor(g/2)*22;return j===4?`<line x1="${x-30}" y1="${y+14}" x2="${x+2}" y2="${y}" stroke="#eee" stroke-width="2"/>`:`<line x1="${x}" y1="${y}" x2="${x}" y2="${y+16}" stroke="#eee" stroke-width="2"/>`}).join('');
+ const sign=u('sign')?`<rect x="20" y="16" width="160" height="30" rx="4" fill="#0E2442" stroke="#E9C243" stroke-width="3"/><text x="100" y="37" font-size="13" font-weight="900" font-style="italic" fill="#E9C243" text-anchor="middle" font-family="Barlow Condensed,sans-serif">${esc(S.name.toUpperCase())}'S ${S.ownShop?'AUTOMOTIVE':'SMALL ENGINES'}</text>`:'';
+ const tally='<rect x="20" y="58" width="104" height="72" fill="#1d2a22" stroke="#6b4f2c" stroke-width="4"/><text x="72" y="72" font-size="10" fill="#ddd" text-anchor="middle" font-family="Barlow Condensed,sans-serif">FAST STARTS</text>'
+  +Array.from({length:Math.min(S.fs,30)},(_,i)=>{const g=Math.floor(i/5),j=i%5,gx=28+(g%3)*32,gy=78+Math.floor(g/3)*24,x=gx+j*5;return `<line x1="${x}" y1="${gy}" x2="${x}" y2="${gy+16}" stroke="#eee" stroke-width="2"/>`+(j===4?`<rect x="${gx-3}" y="${gy-3}" width="27" height="22" fill="none" stroke="#E9C243" stroke-width="1.5" rx="2"/>`:'')}).join('');
  const bench='<rect x="190" y="132" width="190" height="10" fill="#6b4f2c"/><rect x="196" y="142" width="8" height="40" fill="#4d3824"/><rect x="366" y="142" width="8" height="40" fill="#4d3824"/><rect x="230" y="114" width="60" height="18" rx="3" fill="#a8291e"/><rect x="300" y="120" width="40" height="12" fill="#888"/>';
  const counter=u('counter')?'<rect x="20" y="140" width="110" height="44" fill="#0E2442"/><circle cx="60" cy="122" r="12" fill="#c9a07a"/><rect x="50" y="132" width="22" height="10" fill="#A8291E"/>':'';
- const vern=S.town==='Vernon';
+ const vern=S.town==='Vernon',own=!!S.ownShop;
  const door=vern?'<rect x="134" y="40" width="110" height="130" fill="#9aa3ad" stroke="#333" stroke-width="3"/>'+Array.from({length:9},(_,i)=>`<line x1="134" y1="${54+i*13}" x2="244" y2="${54+i*13}" stroke="#6f7780" stroke-width="2"/>`).join('')+'<rect x="140" y="60" width="98" height="14" fill="#cfe3f0" opacity=".8"/>':'';
  const hoist=u('hoist')?'<rect x="128" y="60" width="8" height="120" fill="#A8291E"/><rect x="242" y="60" width="8" height="120" fill="#A8291E"/><rect x="128" y="56" width="122" height="6" fill="#A8291E"/>':'';
- return `<svg viewBox="0 0 400 240" role="img" aria-label="Your shop">${wall}<rect y="170" width="400" height="70" fill="${u('paint')?'#6b6b68':'#4b4b48'}"/><ellipse cx="300" cy="205" rx="30" ry="6" fill="#222" opacity=".5"/>${door}${hoist}${light}${sign}${tally}${peg}${bench}${counter}${leak}</svg>`;
+ return `<svg viewBox="0 0 400 240" role="img" aria-label="Your shop">${wall}<rect y="170" width="400" height="70" fill="${u('paint')?'#6b6b68':'#4b4b48'}"/><ellipse cx="300" cy="205" rx="30" ry="6" fill="#222" opacity=".5"/>${door}${own?'<rect x="8" y="40" width="110" height="130" fill="#9aa3ad" stroke="#333" stroke-width="3"/>'+Array.from({length:9},(_,i)=>`<line x1="8" y1="${54+i*13}" x2="118" y2="${54+i*13}" stroke="#6f7780" stroke-width="2"/>`).join(''):''}${hoist}${light}${sign}${tally}${peg}${bench}${counter}${leak}</svg>`;
 }
 
 /* ---------- shop ---------- */
 function renderShop(){
  $('statShop').innerHTML=statHTML();
- const town=S.town||'Falkland';$('shopName').textContent=(S.upg.includes('sign')?S.name+'’s Small Engines, '+town:(town==='Vernon'?S.name+'’s rented bay, Vernon':S.name+'’s rented shed, Falkland'));
+ const town=S.town||'Falkland';$('shopName').textContent=S.ownShop?S.name+'’s Automotive, Vernon':(S.upg.includes('sign')?S.name+'’s Small Engines, '+town:(town==='Vernon'?S.name+'’s rented bay, Vernon':S.name+'’s rented shed, Falkland'));
  $('garage').innerHTML=garageSVG();
  const j=JOBS[S.job];
  let msg='';
- if(!j)msg=`<div class="card dark"><h3>Season two is done</h3><p>You started in a leaky shed in Falkland with a rusty hammer. Now you run a real bay in Vernon, and people bring you cars. A 1986 Oldsmobile Cutlass is booked in for 1988. That job, and the cars after it, are coming in the next update.</p><p>You earned ${S.fs} Fast Start${S.fs===1?'':'s'} and you rank as <b>${esc(rankOf(S.fs).n)}</b>.</p></div>`;
+ if(!j)msg=`<div class="card dark"><h3>Master mechanic</h3><p>You started in 1984 in a leaky shed in Falkland with a rusty hammer and $60 of birthday money. You finished with your own name over the door in Vernon.</p><p>You earned ${S.fs} Fast Start${S.fs===1?'':'s'} and you rank as <b>${esc(rankOf(S.fs).n)}</b>. Your reputation stands at ${S.rep>0?'+':''}${S.rep}.</p><p>You can still fix up the shop, buy the house and add to your collection. To play again from the start, tap Start a New Career on the title screen.</p></div>`;
  else msg=`<div class="card" id="upNext" style="cursor:pointer"><h3>${S.job===0?'Your first job':'Your next job'}: ${esc(j.when)}</h3><p><b>${esc(j.cust)}</b> is bringing in a <b>${esc(j.title)}</b>. ${S.job===0?'Tap the button below to get started.':'Tap the button below when you’re ready.'}</p></div>`;
  if(S.truck&&j)msg+=`<div class="card dark"><h3>The Fighter Tools truck is parked out front</h3><p>The driver gives you tool truck prices, which beat the hardware store by about a third.</p></div>`;
  $('shopMsg').innerHTML=msg;
@@ -575,7 +1163,7 @@ function openTruck(){
  document.querySelectorAll('#modalCard [data-t]').forEach(b=>b.onclick=()=>{const k=b.dataset.t;spend(TOOLS[k].p,TOOLS[k].n,()=>{S.tools.push(k);save();sfx.clank();renderShop();openTruck()})});
 }
 function openFix(){
- const list=UPG.map(u=>{const own=S.upg.includes(u.id)||(u.id==='roof'&&S.town==='Vernon'),lock=(u.lock&&S.fs<u.lock)||(u.town&&S.town!==u.town);
+ const list=UPG.map(u=>{const own=S.upg.includes(u.id)||(u.id==='roof'&&S.town==='Vernon'),lock=(u.lock&&S.fs<u.lock)||(u.town&&S.town!==u.town)||(u.own&&!S.ownShop);
   return `<button class="opt ${own?'done':''} ${lock?'locked':''}" data-u="${u.id}" ${own||lock?'disabled':''}>${esc(u.n)} · $${u.p}<span class="res">${own?'Done.':esc(u.d)}</span></button>`}).join('');
  modal(`<h3>Fix up the shop</h3><p>Every dollar here is a dollar you didn’t spend on tools. Choose carefully.</p>${list}<button class="btn wide" data-close>DONE</button>`);
  document.querySelectorAll('#modalCard [data-u]').forEach(b=>b.onclick=()=>{const u=UPG.find(x=>x.id===b.dataset.u);spend(u.p,u.n,()=>{S.upg.push(u.id);S.rep+=u.rep;save();sfx.ok();renderShop();openFix()})});
@@ -583,12 +1171,12 @@ function openFix(){
 function openRanks(){
  const r=rankOf(S.fs);
  const rows=RANKS.map(x=>`<div class="rank ${x===r?'on':''}">${bars(x.bar)}<span class="cond">${esc(x.n)}</span><span>${x.at} Fast Start${x.at===1?'':'s'}</span></div>`).join('');
- modal(`<h3>The Fast Start tally</h3><p>Every engine that fires on the first try is a Fast Start. Four Fast Starts moves you up a size, and the bar code on the label shows where you stand.</p>
+ modal(`<h3>The Fast Start tally</h3><p>Every engine that fires on the first try is a Fast Start. As your Fast Starts add up you move up the sizes, and the bar code on the label shows where you stand. The tally counts them in sets of five.</p>
   <div style="background:var(--navy);color:var(--cream);padding:8px;border-radius:10px">${rows}<div class="rank ${S.fs>=FLEET?'on':''}"><span class="cond">Fast Start Fleet</span><span>${FLEET} Fast Starts unlocks fleet work</span></div></div>
   <p class="small">You have ${S.fs}.</p><button class="btn wide" data-close>OK</button>`);
 }
 function openRoad(){
- modal(`<h3>The road ahead</h3><p>Every year, the machines get bigger and the problems get harder. Here’s what’s coming to your shop.</p>${ROAD.map(r=>`<div class="opt locked">${esc(r[0])}<span class="res">${esc(r[1])}</span></div>`).join('')}<button class="btn wide" data-close>BACK TO WORK</button>`);
+ modal(`<h3>The road ahead</h3><p>Every year, the machines get bigger and the problems get harder. Here’s your whole career, from the first mower to the last Porsche.</p>${JOBS.map((jb,i)=>`<div class="opt ${i<S.job?'done':'locked'}">${esc(jb.title)}<span class="res">${esc(jb.when)}${i<S.job?' · done':''}</span></div>`).join('')}<button class="btn wide" data-close>BACK TO WORK</button>`);
 }
 
 /* ---------- lessons ---------- */
@@ -597,6 +1185,17 @@ const INTRO=[
  {title:'Before Fast Start 104, there was the Fast Start',body:'Long before this, George Hartley converted his 1924 Dodge to run on ultra-pure ethanol that he made himself, and he drove it around Jasper. He called it the Fast Start. He was a tinkerer who could make anything run. Fast Start 104 from Deep Blue Distilleries is named for him. In this game, every engine you get running on the first try is a Fast Start.'}
 ];
 const MOVE={title:'Spring 1985: moving to Vernon',tag:'Your shop',body:'Falkland gave you your start, but the work is in Vernon, about 42 kilometres down Highway 97. You load your tools into Dad’s truck and rent a real bay with a roll-up door on the edge of town. Your Falkland customers still drive down to see you. From now on the jobs get bigger: cars and trucks.'};
+const SEASON3={title:'1988: the cars keep coming',tag:'Your shop',body:'Word has spread. The small engines still come in, but most of your work now is cars and trucks from all over the North Okanagan. The jobs are bigger, the parts cost more, and so does advice. Dad and Grandpa still help, but their time costs more now too.'};
+const OPENING=[
+ {title:'Spring 1996: your own shop',tag:'Grand opening',body:'After twelve years of renting, you buy a lot on the edge of Vernon and build a shop of your own, with your name over the door. It has a real office, a parts room and space for a second bay.'},
+ {title:'Grand opening night',tag:'Grand opening',body:'Half the valley shows up: Mrs. Kowalchuk, Ray, the Sandhus, Linnea, Gord and Kyle, and customers you haven’t seen in years. You hire a bartender to serve Fast Start 104 mixed drinks to guests 19 and over. The shop floor stays closed, every customer car is locked away for the night, and everyone who has a drink gets a ride home. Dad gives a short speech. Grandpa says the place looks a lot better than the shed.'},
+ {title:'Harder jobs from here',tag:'Your shop',body:'From now on there are no free slips on the repair steps, and the wrong answers on the diagnosis will look a lot more like the right one. Real mechanics don’t get second chances on a customer’s car.'}
+];
+const SEASON5={title:'2006: the master’s bench',tag:'Your shop',body:'You have been turning wrenches for more than twenty years. Cars now come with turbochargers, superchargers and computers, but the basics haven’t changed: fuel, spark, compression and an honest mechanic. People drive in from Kelowna and Kamloops because they trust you. The jobs ahead are the hardest yet.'};
+const FINALE=[
+ {title:'Race day at Mission Raceway Park',tag:'One last Fast Start',body:'A drag racer you met at a car show asks you to help with his car. It runs on 104-octane racing fuel, which resists knocking under the huge compression of a race engine. On the start line he hits the switch and it fires instantly. Fast Start.'},
+ {title:'A career built with your own hands',tag:'Master mechanic',body:'You were 19 in 1984 with a bicycle, a rusty hammer and no plan. Thirty-two years later you own your shop, you have trained young mechanics, and people across the Okanagan trust you with their cars. Nobody handed you any of it. You built it with your own two hands, one honest repair at a time.'}
+];
 let lessonQ=[],lessonDone=null;
 function lessons(arr,then){lessonQ=arr.slice();lessonDone=then;nextLesson()}
 function nextLesson(){const l=lessonQ.shift();if(!l){lessonDone&&lessonDone();return}
@@ -616,10 +1215,10 @@ function head(){
  $('statJob').innerHTML=statHTML();
  $('stepBar').innerHTML=STAGES.map((s,i)=>`<span class="${i<=st.stage?'d':''}" title="${s}"></span>`).join('');
 }
-function tipBar(){return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $5</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $10</button></div>`}
+function tipBar(){const m=mult();return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $${5*m}</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $${10*m}</button></div>`}
 function bindTips(){
  const t=(who,cost,txt)=>spend(cost,'Advice from '+who,()=>{st.tips++;head();modal(`<div class="who"><div class="face" style="background:${who==='Dad'?'#c7976b':'#e0c8a8'}"></div><h3>${who} says</h3></div><p style="font-size:17px">“${esc(txt)}”</p><button class="btn wide" data-close>THANKS</button>`)});
- const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5,J.dad);if(g)g.onclick=()=>t('Grandpa',10,J.gpa);
+ const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5*mult(),J.dad);if(g)g.onclick=()=>t('Grandpa',10*mult(),J.gpa);
 }
 const GUIDE=[
  'Listen to the customer first. They usually tell you more than they know. When you’re ready, tap Take the Job.',
@@ -636,9 +1235,9 @@ function renderJob(){
  head();const b=$('jobBody');
  const sg=st.stage;
  if(sg===0){
-  b.innerHTML=`<p class="small">${esc(J.when)} · Work order #${S.job+101}</p><h2>${esc(J.title)}</h2><div class="fig">${machineSVG(J.art)}</div>
+  b.innerHTML=`<p class="small">${esc(J.when)} · Work order #${S.job+101}</p><h2>${esc(J.title)}</h2><div class="fig">${machineSVG(J.art,J.col)}</div>
    <div class="card"><div class="who"><div class="face" style="background:${J.face}"></div><div><b>${esc(J.cust)}</b><br><span class="small">${esc(J.rel)}</span></div></div>
-   <p style="font-size:17px">“${esc(J.story)}”</p><p class="small">Pays $${J.pay+(S.upg.includes('sign')?5:0)} for labour, plus parts at cost.</p></div>
+   <p style="font-size:17px">“${esc(J.story)}”</p><p class="small">Pays $${J.pay+(S.upg.includes('sign')?5*mult():0)} for labour, plus parts at cost.</p></div>
    <button class="btn wide" id="go">TAKE THE JOB</button>`;
   $('go').onclick=()=>{st.stage=1;renderJob()};
  }
@@ -652,11 +1251,11 @@ function renderJob(){
   $('go').onclick=()=>{st.stage=2;renderJob()};bindTips();
  }
  if(sg===2){
-  b.innerHTML=`<h2>What’s wrong with it?</h2><p>Pick the cause. A wrong call costs you $3 in time and parts you didn’t need, and it costs you the Fast Start.</p>`+(st.dorder||(st.dorder=J.diag.map((_,i)=>i).sort(()=>Math.random()-.5))).map(i=>`<button class="opt" data-d="${i}">${esc(J.diag[i].t)}</button>`).join('')+`<div id="dRes"></div>`+tipBar()+`<button class="btn ghost" id="back">LOOK AGAIN</button>`;
+  b.innerHTML=`<h2>What’s wrong with it?</h2><p>Pick the cause. A wrong call costs you $${3*mult()} in time and parts you didn’t need, and it costs you the Fast Start.</p>`+(st.dorder||(st.dorder=J.diag.map((_,i)=>i).sort(()=>Math.random()-.5))).map(i=>`<button class="opt" data-d="${i}">${esc(J.diag[i].t)}</button>`).join('')+`<div id="dRes"></div>`+tipBar()+`<button class="btn ghost" id="back">LOOK AGAIN</button>`;
   b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{const d=J.diag[+x.dataset.d];st.diagTries++;
    if(d.ok){st.diagOK=true;sfx.ok();x.classList.add('done');$('dRes').innerHTML=`<div class="card"><h3>${st.diagTries===1?'Right the first time':'That’s it'}</h3><p>${esc(d.why)}</p><button class="btn wide" id="go">GET THE TOOLS</button></div>`;
     b.querySelectorAll('[data-d]').forEach(y=>y.disabled=true);$('go').onclick=()=>{st.stage=3;renderJob()};}
-   else{sfx.bad();x.classList.add('bad');x.disabled=true;S.cash=Math.max(0,S.cash-3);save();head();$('dRes').innerHTML=`<div class="card"><h3>Not that</h3><p>${esc(d.why)}</p></div>`}});
+   else{sfx.bad();x.classList.add('bad');x.disabled=true;S.cash=Math.max(0,S.cash-3*mult());save();head();$('dRes').innerHTML=`<div class="card"><h3>Not that</h3><p>${esc(d.why)}</p></div>`}});
   $('back').onclick=()=>{st.stage=1;renderJob()};bindTips();
  }
  if(sg===3)dragStage('tools');
@@ -719,7 +1318,7 @@ function stepsStage(){
  if(!st.pools)st.pools={};
  if(!st.pools[ph]){const bp=J.bp||[0,1];st.pools[ph]=[...J.steps.map((t,i)=>({t,i})).filter(x=>SP[x.i]===ph),...J.bad.map((x,k)=>({t:x.t,bad:k})).filter(x=>bp[x.bad]===ph&&!(st.usedBad||[]).includes(x.bad))].sort(()=>Math.random()-.5)}
  const pool=st.pools[ph].filter(p=>!st.seq.includes(p));
- b.innerHTML=`<h2>Do the repair</h2><p>The job comes in three stages. In each stage, tap the steps in the order you’d do them. If you pick one too early, it bounces back, and your first slip is free. Leave out anything a good mechanic wouldn’t do.</p>
+ b.innerHTML=`<h2>Do the repair</h2><p>The job comes in three stages. In each stage, tap the steps in the order you’d do them. If you pick one too early, it bounces back.${freeSlips()?' Your first slip is free.':' From here on, every slip costs you the Fast Start.'} Leave out anything a good mechanic wouldn’t do.</p>
   <div class="card" id="seqBox">${PHASES.map((nm,k)=>`<h3 style="margin-top:${k?10:0}px;${k===ph&&!done?'':'opacity:.55'}">${k+1}. ${nm}${k<ph||done?' ✓':''}</h3>`+J.steps.map((_,i)=>i).filter(i=>SP[i]===k).map(i=>{const sq=st.seq[i];return `<div class="seq" style="margin:6px 0"><span class="n ${sq?'':'e'}">${i+1}</span><span>${sq?esc(sq.t):'<span class="small">…</span>'}</span></div>`}).join('')).join('')}</div>
   ${done?'':`<h3>Stage ${ph+1}: ${PHASES[ph]}</h3>`+pool.map(p=>`<button class="opt" data-p="${st.pools[ph].indexOf(p)}">${esc(p.t)}</button>`).join('')}
   <div id="dRes">${st.slipMsg||''}</div><button class="btn wide" id="go" ${done?'':'disabled'}>DO THE WORK</button>${tipBar()}`;
@@ -730,8 +1329,8 @@ function stepsStage(){
    st.flawed=true;(st.usedBad=st.usedBad||[]).push(p.bad);save();head();
    modal(`<h3>${bd.nostart?'That didn’t work':'You broke something'}</h3><p>${esc(bd.msg)}</p><button class="btn wide" data-close>LESSON LEARNED</button>`);
    st.pools[ph]=st.pools[ph].filter(q=>q!==p);stepsStage();return}
-  if(p.i!==st.seq.length){sfx.bad();st.slips=(st.slips||0)+1;if(st.slips>1)st.flawed=true;
-   st.slipMsg=`<div class="card pop"><h3>Not yet</h3><p>Something in this stage has to happen first. ${st.slips===1?'That slip was free.':'That one costs you the Fast Start.'}</p></div>`;stepsStage();return}
+  if(p.i!==st.seq.length){sfx.bad();st.slips=(st.slips||0)+1;if(st.slips>freeSlips())st.flawed=true;
+   st.slipMsg=`<div class="card pop"><h3>Not yet</h3><p>Something in this stage has to happen first. ${st.slips<=freeSlips()?'That slip was free.':'That one costs you the Fast Start.'}</p></div>`;stepsStage();return}
   st.seq.push(p);sfx.clank();stepsStage()});
  bindTips();addGuide();
  $('go').onclick=()=>{st.stage=6;renderJob()};
@@ -739,7 +1338,7 @@ function stepsStage(){
 function crankStage(){
  const b=$('jobBody');
  const bad=J.extraBad&&st.parts.has(J.extraBad.id)&&!J.need(new Set([...st.parts].filter(x=>x!==J.extraBad.id)));
- b.innerHTML=`<h2>Moment of truth</h2><div class="fig" id="mfig">${machineSVG(J.art)}</div><div id="dRes"></div><button class="btn wide red" id="go" style="font-size:28px">${esc(J.pull)}</button>`;
+ b.innerHTML=`<h2>Moment of truth</h2><div class="fig" id="mfig">${machineSVG(J.art,J.col)}</div><div id="dRes"></div><button class="btn wide red" id="go" style="font-size:28px">${esc(J.pull)}</button>`;
  $('go').onclick=()=>{audioOn();sfx.pull();const f=$('mfig');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');$('go').disabled=true;
   setTimeout(()=>{
    if(bad){sfx.cough();$('dRes').innerHTML=`<div class="card"><h3>It won’t pick up fuel</h3><p>${esc(J.extraBad.msg)}</p><button class="btn wide" id="redo">BACK TO THE PARTS</button></div>`;$('go').remove();st.flawed=true;
@@ -766,7 +1365,7 @@ function finishJob(fast){
   $('eat').onclick=()=>{S.rep+=1;save();step2()};$('bill').onclick=()=>{S.rep-=2;S.cash+=unCost;save();step2()}}
  else step2();
  function pay(choice){
-  const labour=J.pay+(S.upg.includes('sign')?5:0);const repBonus=Math.max(0,Math.round(S.rep*0.6));
+  const labour=J.pay+(S.upg.includes('sign')?5*mult():0);const repBonus=Math.max(0,Math.round(S.rep*0.6));
   const wasted=[...st.paid].filter(id=>!st.parts.has(id)).reduce((a,id)=>a+J.parts.find(p=>p.id===id).p,0);const neededCost=Math.max(0,st.partCost-unCost-wasted);
   const iouIn=S.iou||0;S.iou=choice.iou||0;
   let gross=labour+neededCost+choice.cash+repBonus+iouIn;S.rep+=choice.rep;
@@ -777,6 +1376,10 @@ function finishJob(fast){
    <button class="btn wide" id="done">CLOSE OUT THE JOB</button></div>`;
   $('done').onclick=()=>{const L=[{title:J.lesson.title,body:J.lesson.body,tag:'Learning from the job'}];
    if(S.job===4&&S.town!=='Vernon'){S.town='Vernon';save();L.push(MOVE)}
+   if(S.job===7)L.push(SEASON3);
+   if(S.job===11&&!S.ownShop){S.ownShop=true;S.town='Vernon';save();L.push(...OPENING)}
+   if(S.job===15)L.push(SEASON5);
+   if(S.job===JOBS.length)L.push(...FINALE);
    if(S.job===1)L.push({title:'A truck pulls up',body:'A big Fighter Tools truck stops in front of your shed. The driver has a route through town every week. From now on you can buy tools from him for less than the hardware store charges.',tag:'Your shop'});
    lessons(L,()=>{renderShop();show('sShop')})};
  }
@@ -787,7 +1390,7 @@ $('ageYes').onclick=()=>{audioOn();try{sessionStorage.setItem('fs104age','1')}ca
 $('ageNo').onclick=()=>{$('ageMsg').textContent='Thanks for being honest. Come back when you’re 19.'};
 function title(){const s=store.get();$('newGame').style.display=s?'none':'';$('contGame').style.display=s?'':'none';show('sTitle')}
 $('startBtn').onclick=()=>{audioOn();const n=($('nameIn').value||'').trim().replace(/[^\p{L} '\-]/gu,'').slice(0,14)||'Danny';S=fresh(n);save();lessons(INTRO,()=>{renderShop();show('sShop')})};
-$('contBtn').onclick=()=>{S=store.get();if(!S.town)S.town='Falkland';if(S.iou===undefined)S.iou=0;if(S.job>=4&&S.town!=='Vernon'){S.town='Vernon';save();lessons([MOVE],()=>{renderShop();show('sShop')});return}renderShop();show('sShop')};
+$('contBtn').onclick=()=>{S=store.get();if(!S.town)S.town='Falkland';if(S.iou===undefined)S.iou=0;if(S.job>=11&&!S.ownShop){S.ownShop=true;save()}if(S.job>=4&&S.town!=='Vernon'){S.town='Vernon';save();lessons([MOVE],()=>{renderShop();show('sShop')});return}renderShop();show('sShop')};
 $('resetBtn').onclick=()=>{modal(`<h3>Start over?</h3><p>Your shop, tools and Fast Starts will be gone.</p><button class="btn red" id="rs">START OVER</button><button class="btn cream" data-close>KEEP MY SHOP</button>`);$('rs').onclick=()=>{store.clear();closeModal();title()}};
 $('nextJobBtn').onclick=()=>{audioOn();startJob()};
 $('truckBtn').onclick=openTruck;$('fixBtn').onclick=openFix;$('ranksBtn').onclick=openRanks;$('roadBtn').onclick=openRoad;
