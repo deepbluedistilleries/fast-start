@@ -223,6 +223,7 @@ const SEASON_AT=[0,4,7,11,17];
 function seasonOf(i){let n=1;SEASON_AT.forEach((a,k)=>{if(i>=a)n=k+1});return n}
 const MULT=[1,1,4,10,25];
 function mult(){return MULT[seasonOf(S.job)-1]}
+function shopRate(){return 1+0.05*S.upg.length}
 function freeSlips(){return seasonOf(S.job)<=3?1:0}
 
 const JOBS=[
@@ -779,7 +780,7 @@ const JOBS=[
   lesson:{title:'Gears, chains and belts',body:'Engines drive their camshafts three ways. Older engines like the Volvo B20 use gears that mesh directly. Many V8s use a chain. Most newer overhead-cam engines use a rubber belt. Some B18 and B20 engines came with a fibre cam gear to keep them quiet. It works until the teeth strip, and then the engine simply stops. The 1800ES was the shooting-brake version of the P1800, built only in 1972 and 1973.'}
 },
 { id:'etype', when:'June 2002', title:'1967 Jaguar E-Type roadster, 4.2 litre', art:'sports', col:'#a8291e', pull:'TURN THE KEY',
-  cust:'Nigel Pembroke', rel:'a retired dentist from Coldstream', face:'#efd6bb', pay:650,
+  cust:'Nigel Pembroke', rel:'a retired dentist from Coldstream', face:'#efd6bb', pay:900,
   sp:[0,0,1,1,2,2], bp:[1,2],
   story:'There’s a rattle from the top of the engine at idle that wasn’t there last summer. It goes away when I rev it. I’m showing it in Kelowna next month and I want it perfect.',
   checks:[
@@ -897,7 +898,7 @@ const JOBS=[
   lesson:{title:'Sludge and the 1.8T',body:'Volkswagen and Audi’s 1.8 litre turbo four went into the GTI, Jetta, Passat and Audi A4. It holds a small amount of oil and runs its turbo hot. With long oil change intervals or the wrong oil it can build sludge that clogs the oil pickup screen, and the first warning is often an oil pressure light at hot idle. Volkswagen and Audi later settled a class action over sludge in Passats and A4s with this engine. The fix is to clean it out properly. The cure is the right synthetic oil, changed on time.'}
 },
 { id:'chevelle', when:'May 2007', title:'1970 Chevrolet Chevelle SS 396', art:'muscle', col:'#1d2f6e', pull:'TURN THE KEY',
-  cust:'Darren Sidhu', rel:'whose cousin rebuilt the engine over the winter', face:'#a8774f', pay:900,
+  cust:'Darren Sidhu', rel:'whose cousin rebuilt the engine over the winter', face:'#a8774f', pay:1100,
   sp:[0,0,0,1,1,1,2,2], bp:[1,2],
   story:'My cousin rebuilt the engine over the winter. It ran great for about 800 kilometres. Now it’s down on power, it pops back through the carburetor, and there’s a ticking from the passenger side.',
   checks:[
@@ -938,7 +939,7 @@ const JOBS=[
   lesson:{title:'Zinc and flat-tappet cams',body:'Older engines use flat-tappet camshafts, where each lifter slides across the face of a cam lobe. That sliding contact relies on an anti-wear additive called ZDDP, which carries zinc and phosphorus. Oil makers cut it back because it poisons catalytic converters, and modern roller-cam engines don’t need as much. A new flat-tappet cam must be broken in with high-zinc oil at a fast idle, or a lobe can wipe flat in minutes.'}
 },
 { id:'subaru', when:'October 2008', title:'2002 Subaru Impreza 2.5 RS', art:'rally', col:'#1d4ed8', pull:'TURN THE KEY',
-  cust:'Owen Pritchard', rel:'who drives logging roads to go fishing', face:'#d4a77d', pay:1000,
+  cust:'Owen Pritchard', rel:'who drives logging roads to go fishing', face:'#d4a77d', pay:1100,
   sp:[0,0,0,1,1,2,2,2], bp:[0,1],
   story:'It smells like burning oil when I stop, there’s a puddle under it, and the coolant keeps going down. It has 230,000 kilometres on it.',
   checks:[
@@ -979,7 +980,7 @@ const JOBS=[
   lesson:{title:'Subaru’s head gasket years',body:'Subaru’s boxer engines lie flat, with a cylinder head on each side. The naturally aspirated 2.5 litre engines from roughly 1996 to 2004 became known for head gasket trouble, and many from 1999 on leaked oil and coolant to the outside at the seam between head and block. The turbocharged WRX had far fewer problems. The lasting fix uses multi-layer steel gaskets and freshly surfaced heads.'}
 },
 { id:'skyline', when:'August 2009', title:'1990 Nissan Skyline GT-R, right-hand drive', art:'coupe', col:'#d8dbe0', pull:'TURN THE KEY',
-  cust:'Kevin Tran', rel:'who imported it from Japan', face:'#d7b38e', pay:1200,
+  cust:'Kevin Tran', rel:'who imported it from Japan', face:'#d7b38e', pay:1500,
   sp:[0,0,0,1,1,1,2,2], bp:[1,2],
   story:'I turned the boost up last month. Now it blows blue smoke, it’s lost a ton of power, and there’s a siren noise from the engine bay when I get on it.',
   checks:[
@@ -1018,7 +1019,7 @@ const JOBS=[
   lesson:{title:'The cars that came over from Japan',body:'Canada lets in cars from other countries once they are fifteen years old. The United States makes people wait twenty-five years. That’s why BC roads are full of right-hand-drive Skylines, Supras and vans from Japan. The R32 Skyline GT-R used two turbochargers with lightweight ceramic turbine wheels. They spool up fast, but turned up past what they were built for, the ceramic can shatter.'}
 },
 { id:'rx7', when:'May 2010', title:'1993 Mazda RX-7, twin-turbo rotary', art:'rx7', col:'#e8b923', pull:'TURN THE KEY',
-  cust:'Marcus Lee', rel:'who has wanted one since he was twelve', face:'#d9b38c', pay:1300,
+  cust:'Marcus Lee', rel:'who has wanted one since he was twelve', face:'#d9b38c', pay:1600,
   sp:[0,0,0,1,1,2,2,2], bp:[1,2],
   story:'It starts fine cold. But after a drive, if I shut it off for ten minutes, it cranks and cranks and won’t fire. It also puffs smoke when I come off the throttle.',
   checks:[
@@ -1096,7 +1097,7 @@ const JOBS=[
   lesson:{title:'Fix the cause, not only the damage',body:'The Smart fortwo of this era uses a one-litre three-cylinder engine. A known weak spot is the oil control rings, which can gum up and leave oil in the top of the cylinder, where it cooks the valves and leads to a misfire from low compression. The engine is small and comparatively cheap to rebuild. A good mechanic fixes the burned valve and the rings that caused it.'}
 },
 { id:'vette', when:'April 2014', title:'2008 Chevrolet Corvette Z06, 7.0 litre LS7', art:'vette', col:'#c4161c', pull:'TURN THE KEY',
-  cust:'Dan Okonkwo', rel:'who takes it to car shows across the Okanagan', face:'#7a4b2e', pay:1600,
+  cust:'Dan Okonkwo', rel:'who takes it to car shows across the Okanagan', face:'#7a4b2e', pay:2000,
   sp:[0,0,0,1,1,2,2,2], bp:[0,2],
   story:'It’s never missed a beat, but I’ve been reading on the Corvette forums about LS7s dropping valves. It has 60,000 kilometres. Can you check it before I drive it through the Rockies?',
   checks:[
@@ -1135,7 +1136,7 @@ const JOBS=[
   lesson:{title:'Measure, don’t guess',body:'The LS7 V8 in the 2006 to 2013 Corvette Z06 became famous among owners for exhaust valve guide wear that, in some cases, let a valve drop into a cylinder. GM published a bulletin saying incidents were very low and engines without symptoms shouldn’t be torn down. Owners and shops answered with the wiggle test, which measures valve stem movement with a dial indicator. Either way, the lesson for a mechanic is the same: measure it.'}
 },
 { id:'tremor', when:'October 2015', title:'2014 Ford F-150 Tremor, 3.5 EcoBoost', art:'pickup', col:'#1a1a1a', pull:'TURN THE KEY',
-  cust:'Brandon Kerr', rel:'a framer who tows his work trailer every day', face:'#c89c74', pay:1400,
+  cust:'Brandon Kerr', rel:'a framer who tows his work trailer every day', face:'#c89c74', pay:1500,
   sp:[0,0,0,1,1,1,2,2], bp:[0,2],
   story:'On cold mornings it rattles for a couple of seconds when it first starts, then goes quiet. It’s getting longer every week. I tow a lot and I’ve been stretching my oil changes.',
   checks:[
@@ -1174,7 +1175,7 @@ const JOBS=[
   lesson:{title:'Turbos, chains and clean oil',body:'Ford’s 3.5 litre EcoBoost V6 uses twin turbochargers to make big-engine power from a smaller engine. Its cams are driven by chains, and the cam phasers that adjust valve timing rely on clean oil at the right pressure. Long oil changes, especially while towing, wear the chains and phasers faster. A rattle for a few seconds on a cold start is the classic early warning.'}
 },
 { id:'jagxf', when:'June 2016', title:'2015 Jaguar XF, 3.0 supercharged V6', art:'saloon', col:'#0d1b2a', pull:'PRESS START',
-  cust:'Melissa Grant', rel:'a realtor in Kelowna', face:'#e0b894', pay:1500,
+  cust:'Melissa Grant', rel:'a realtor in Kelowna', face:'#e0b894', pay:2000,
   sp:[0,0,0,1,1,2,2,2], bp:[0,2],
   story:'There’s a clattering rattle from the engine at idle, worst when it’s warm. The dealer wanted to keep it for a week. Someone told me you were the person to see.',
   checks:[
@@ -1213,7 +1214,7 @@ const JOBS=[
   lesson:{title:'Reading the bulletins',body:'Car makers publish technical service bulletins when a pattern of problems shows up. Jaguar issued one for a clattering noise in its 3.0 litre supercharged V6 and traced it to wear in the torsional isolator that drives the supercharger. A master mechanic still listens, tests and proves the cause, but checks the bulletins before ordering expensive parts.'}
 },
 { id:'porsche', when:'December 2016', title:'2003 Porsche 911 Carrera (996)', art:'porsche', col:'#c9a227', pull:'TURN THE KEY',
-  cust:'Vivian Okafor', rel:'who just bought her dream car', face:'#8a5a3b', pay:2000,
+  cust:'Vivian Okafor', rel:'who just bought her dream car', face:'#8a5a3b', pay:2600,
   sp:[0,0,0,1,1,1,2,2], bp:[0,1],
   story:'I just bought it. It runs beautifully, but the clutch is slipping, and everyone at the Porsche club keeps saying three letters to me: I, M, S. I want you to look it over before I fall any further in love.',
   checks:[
@@ -1372,7 +1373,7 @@ function openTruck(){
 function openFix(){
  const list=UPG.map(u=>{const own=S.upg.includes(u.id)||(u.id==='roof'&&S.town==='Vernon'),lock=(u.lock&&S.fs<u.lock)||(u.town&&S.town!==u.town)||(u.own&&!S.ownShop);
   return `<button class="opt ${own?'done':''} ${lock?'locked':''}" data-u="${u.id}" ${own||lock?'disabled':''}>${esc(u.n)} · $${u.p}<span class="res">${own?'Done.':esc(u.d)}</span></button>`}).join('');
- modal(`<h3>Fix up the shop</h3><p>Every dollar here is a dollar you didn’t spend on tools. Choose carefully.</p>${list}<button class="btn wide" data-close>DONE</button>`);
+ modal(`<h3>Fix up the shop</h3><p>Every dollar here is a dollar you didn’t spend on tools. A better shop charges a better rate: each improvement raises your labour rate by 5% on every job after it.</p>${list}<button class="btn wide" data-close>DONE</button>`);
  document.querySelectorAll('#modalCard [data-u]').forEach(b=>b.onclick=()=>{const u=UPG.find(x=>x.id===b.dataset.u);spend(u.p,u.n,()=>{S.upg.push(u.id);S.rep+=u.rep;save();sfx.ok();renderShop();openFix()})});
 }
 function openRanks(){
@@ -1422,10 +1423,11 @@ function head(){
  $('statJob').innerHTML=statHTML();
  $('stepBar').innerHTML=STAGES.map((s,i)=>`<span class="${i<=st.stage?'d':''}" title="${s}"></span>`).join('');
 }
-function tipBar(){const m=mult();return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $${5*m}</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $${10*m}</button></div>`}
+function tipCost(){return seasonOf(S.job)<=2?1:4}
+function tipBar(){const m=tipCost();return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn cream" id="tipDad" style="font-size:18px">ASK DAD · $${5*m}</button><button class="btn cream" id="tipGpa" style="font-size:18px">ASK GRANDPA · $${10*m}</button></div>`}
 function bindTips(){
  const t=(who,cost,txt)=>spend(cost,'Advice from '+who,()=>{st.tips++;head();modal(`<div class="who"><div class="face" style="background:${who==='Dad'?'#c7976b':'#e0c8a8'}"></div><h3>${who} says</h3></div><p style="font-size:17px">“${esc(txt)}”</p><button class="btn wide" data-close>THANKS</button>`)});
- const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5*mult(),J.dad);if(g)g.onclick=()=>t('Grandpa',10*mult(),J.gpa);
+ const d=$('tipDad'),g=$('tipGpa');if(d)d.onclick=()=>t('Dad',5*tipCost(),J.dad);if(g)g.onclick=()=>t('Grandpa',10*tipCost(),J.gpa);
 }
 const GUIDE=[
  'Listen to the customer first. They usually tell you more than they know. When you’re ready, tap Take the Job.',
@@ -1444,7 +1446,7 @@ function renderJob(){
  if(sg===0){
   b.innerHTML=`<p class="small">${esc(J.when)} · Work order #${S.job+101}</p><h2>${esc(J.title)}</h2><div class="fig">${machineSVG(J.art,J.col)}</div>
    <div class="card"><div class="who"><div class="face" style="background:${J.face}"></div><div><b>${esc(J.cust)}</b><br><span class="small">${esc(J.rel)}</span></div></div>
-   <p style="font-size:17px">“${esc(J.story)}”</p><p class="small">Pays $${J.pay+(S.upg.includes('sign')?5*mult():0)} for labour, plus parts at cost.</p></div>
+   <p style="font-size:17px">“${esc(J.story)}”</p><p class="small">Pays $${Math.round(J.pay*shopRate())+(S.upg.includes('sign')?5*mult():0)} for labour${S.upg.length?` (your shop rate is up ${S.upg.length*5}% from your upgrades)`:''}, plus parts at cost.</p></div>
    <button class="btn wide" id="go">TAKE THE JOB</button>`;
   $('go').onclick=()=>{st.stage=1;renderJob()};
  }
@@ -1572,7 +1574,7 @@ function finishJob(fast){
   $('eat').onclick=()=>{S.rep+=1;save();step2()};$('bill').onclick=()=>{S.rep-=2;S.cash+=unCost;save();step2()}}
  else step2();
  function pay(choice){
-  const labour=J.pay+(S.upg.includes('sign')?5*mult():0);const repBonus=Math.max(0,Math.round(S.rep*0.6));
+  const labour=Math.round(J.pay*shopRate())+(S.upg.includes('sign')?5*mult():0);const repBonus=Math.max(0,Math.round(S.rep*0.6));
   const wasted=[...st.paid].filter(id=>!st.parts.has(id)).reduce((a,id)=>a+J.parts.find(p=>p.id===id).p,0);const neededCost=Math.max(0,st.partCost-unCost-wasted);
   const iouIn=S.iou||0;S.iou=choice.iou||0;
   let gross=labour+neededCost+choice.cash+repBonus+iouIn;S.rep+=choice.rep;
