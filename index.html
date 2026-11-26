@@ -101,6 +101,7 @@ a{color:var(--yel)}
     <button class="btn" id="contBtn">BACK TO THE SHOP</button><br>
     <button class="btn ghost" id="resetBtn">START A NEW CAREER</button>
   </div>
+  <button class="btn ghost" id="chapBtn">JUMP TO A CHAPTER</button>
   <div class="card" style="text-align:left">
     <h3>How a job works</h3>
     <p>A machine comes in that won't start. You inspect it, decide what's wrong, drag the right tools and parts to the bench, and put the repair steps in order. Then you pull the cord. If it fires on the first try, that's a <b>Fast Start</b>.</p>
@@ -1396,7 +1397,7 @@ const INTRO=[
 const MOVE={title:'Spring 1985: moving to Vernon',tag:'Your shop',body:'Falkland gave you your start, but the work is in Vernon, about 42 kilometres down Highway 97. You load your tools into Dad’s truck and rent a real bay with a roll-up door on the edge of town. Your Falkland customers still drive down to see you. From now on the jobs get bigger: cars and trucks.'};
 const SEASON3={title:'1988: the cars keep coming',tag:'Your shop',body:'Word has spread. The small engines still come in, but most of your work now is cars and trucks from all over the North Okanagan. The jobs are bigger, the parts cost more, and so does advice. Dad and Grandpa still help, but their time costs more now too.'};
 const OPENING=[
- {title:'Spring 1996: your own shop',tag:'Grand opening',body:'After twelve years of renting, you buy a lot on the edge of Vernon and build a shop of your own, with your name over the door. It has a real office, a parts room and space for a second bay. Before the guests arrive, you spend $20 on subs from Mr. Sub, and you, Dad and Grandpa eat lunch on the tailgate, looking at the new building.'},
+ {title:'Spring 1996: your own shop',tag:'Grand opening',body:'After twelve years of renting, you buy a lot on the edge of Vernon and build a shop of your own, with your name over the door. It has a real office, a parts room and space for a second bay. Before the guests arrive, you spend $20 on subs from Mr. Sub, and you, Dad and Grandpa eat lunch on the tailgate, looking at the new building. Grandpa says the Assorted Cold Cuts is delicious, and he’s right.'},
  {title:'Grand opening night',tag:'Grand opening',body:'Half the valley shows up: Mrs. Kowalchuk, Ray, the Sandhus, Linnea, Gord and Kyle, and customers you haven’t seen in years. You hire a bartender to serve Fast Start 104 mixed drinks to guests 19 and over. The shop floor stays closed, every customer car is locked away for the night, and everyone who has a drink gets a ride home. Dad gives a short speech. Grandpa says the place looks a lot better than the shed.'},
  {title:'Harder jobs from here',tag:'Your shop',body:'From now on there are no free slips on the repair steps, and the wrong answers on the diagnosis will look a lot more like the right one. Real mechanics don’t get second chances on a customer’s car.'}
 ];
@@ -1609,6 +1610,24 @@ $('ageNo').onclick=()=>{$('ageMsg').textContent='Thanks for being honest. Come b
 function title(){const s=store.get();$('newGame').style.display=s?'none':'';$('contGame').style.display=s?'':'none';show('sTitle')}
 $('startBtn').onclick=()=>{audioOn();const n=($('nameIn').value||'').trim().replace(/[^\p{L} '\-]/gu,'').slice(0,14)||'Danny';S=fresh(n);save();lessons(INTRO,()=>{renderShop();show('sShop')})};
 $('contBtn').onclick=()=>{S=store.get();if(!S.town)S.town='Falkland';if(S.iou===undefined)S.iou=0;if(S.job>=11&&!S.ownShop){S.ownShop=true;save()}if(S.job>=4&&S.town!=='Vernon'){S.town='Vernon';save();lessons([MOVE],()=>{renderShop();show('sShop')});return}renderShop();show('sShop')};
+
+const CHAPTERS=[
+ {job:4,n:'1985: Moving to Vernon',d:'Cars and trucks start coming in.',cash:100,upg:['roof','lights'],les:()=>[MOVE]},
+ {job:7,n:'1988: The cars keep coming',d:'Bigger jobs, bigger parts bills.',cash:150,upg:['roof','lights','peg','paint'],les:()=>[SEASON3]},
+ {job:11,n:'1996: Your own shop',d:'The grand opening and harder jobs.',cash:800,upg:['roof','lights','peg','paint','sign','hoist','counter'],les:()=>OPENING},
+ {job:17,n:'2006: The master’s bench',d:'Turbos, superchargers and the Porsche.',cash:3500,upg:['roof','lights','peg','paint','sign','hoist','counter','bay2','apprentice'],les:()=>[SEASON5]}
+];
+function jumpTo(c){
+ const n=($('nameIn').value||'').trim().replace(/[^\p{L} '\-]/gu,'').slice(0,14)||(store.get()||{}).name||'Danny';
+ S=fresh(n);S.job=c.job;S.fs=c.job;S.rep=Math.round(c.job*2.5);S.cash=c.cash;S.truck=true;S.town='Vernon';S.upg=c.upg.slice();
+ if(c.job>=11)S.ownShop=true;
+ const t=new Set(S.tools);
+ for(let i=0;i<c.job;i++){const j=JOBS[i];S.done.push(j.id);(j.tools||[]).forEach(k=>TOOLS[k]&&t.add(k));(j.checks||[]).forEach(ch=>{if(ch.req&&TOOLS[ch.req])t.add(ch.req);if(ch.tool&&TOOLS[ch.tool])t.add(ch.tool)})}
+ S.tools=[...t];save();closeModal();
+ lessons([{title:c.n,tag:'Jump ahead',body:'You start this chapter with $'+c.cash+', '+c.job+' Fast Starts, the shop upgrades and every tool the earlier jobs needed. Everything you would have bought on the way is already on your wall.'},...c.les()],()=>{renderShop();show('sShop')})}
+$('chapBtn').onclick=()=>{const has=!!store.get();
+ modal(`<h3>Jump to a chapter</h3><p class="small">${has?'This replaces the career you have saved. ':''}You get the tools, upgrades and cash you would have earned by then.</p>`+CHAPTERS.map((c,i)=>`<button class="opt" data-ch="${i}"><b>${esc(c.n)}</b><br><span class="small">${esc(c.d)}</span></button>`).join('')+`<button class="btn cream" data-close>CANCEL</button>`);
+ document.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{audioOn();jumpTo(CHAPTERS[+b.dataset.ch])})};
 $('resetBtn').onclick=()=>{modal(`<h3>Start over?</h3><p>Your shop, tools and Fast Starts will be gone.</p><button class="btn red" id="rs">START OVER</button><button class="btn cream" data-close>KEEP MY SHOP</button>`);$('rs').onclick=()=>{store.clear();closeModal();title()}};
 $('nextJobBtn').onclick=()=>{audioOn();startJob()};
 $('truckBtn').onclick=openTruck;$('fixBtn').onclick=openFix;$('ranksBtn').onclick=openRanks;$('roadBtn').onclick=openRoad;
